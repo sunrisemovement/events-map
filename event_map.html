@@ -1,0 +1,773 @@
+<!-- Include some styles from the main site (don't copy these) -->
+
+<meta charset='utf-8'/>
+<link rel='stylesheet' href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:100,200,300,400,500,600,700&display=swap"/>
+<link rel='stylesheet' href="https://fonts.googleapis.com/css?family=Source+Serif+Pro:400,600,700,700i&display=swap"/>
+<style>
+body {
+  font-weight: 200;
+  font-size: 18px;
+  //font-family: source-serif-pro,'Source Serif Pro',serif;
+  font-family: 'Source Sans Pro',sans-serif;
+  font-style: normal;
+  letter-spacing: 0.02em;
+  line-height: 1.5em;
+  -moz-osx-font-smoothing: auto;
+}
+b, strong {
+  font-weight: bold;
+}
+h2 {
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  letter-spacing: 0.125em;
+  text-transform: uppercase;
+}
+h3 {
+  line-height: 1.25em;
+  text-transform: none;
+  letter-spacing: 0.05em;
+  font-style: normal;
+  font-family: source-serif-pro,'Source Serif Pro',serif;
+}
+</style>
+
+<!-- Copy from here down -->
+
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
+
+<style>
+
+:root {
+  --tmap-white: #FFFFFF;
+  --tmap-black: #33342E;
+  --tmap-off-white: #F4F4F4;
+  --tmap-light-grey: #E0E0E0;
+
+  --tmap-small-font: 14px;
+  --tmap-large-font: 18px;
+
+  --tmap-height: 564px;
+  --tmap-width: 300px;
+  --tmap-bottom-padding: 24px;
+}
+
+/* Fixes issue on mobile */
+[class*=sqs-col] .sqs-block {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+#event-map {
+  height: var(--tmap-height);
+  color: var(--tmap-black);
+}
+
+#event-map .event-name {
+  font-weight: 600;
+}
+
+#event-map .event-spacetime {
+  font-weight: 300;
+}
+
+#event-map *::-webkit-search-cancel-button {
+  -webkit-appearance: searchfield-cancel-button;
+}
+
+#event-map .sidebar {
+  position: absolute;
+  width: var(--tmap-width);
+  max-height: calc(var(--tmap-height) - var(--tmap-bottom-padding));
+  max-width: 50%;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  background: var(--tmap-white);
+}
+
+#event-map .map {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  bottom: var(--tmap-bottom-padding);
+}
+
+#event-map .listings {
+  font-family: 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+  max-height: calc(var(--tmap-height) - 41px - var(--tmap-bottom-padding));
+  overflow:auto;
+  background-color: var(--tmap-white);
+  border: 1px solid var(--tmap-white);
+}
+
+#event-map .listings .item {
+  border-bottom: 2px solid var(--tmap-off-white);
+  font-size: var(--tmap-large-font);
+  line-height: 27px;
+  padding: 17px 14px;
+}
+
+#event-map .listings .item:hover,
+#event-map .listings .item.active {
+  cursor: pointer;
+  background-color: var(--tmap-off-white);
+}
+
+#event-map .listings .item:last-child { border-bottom:none; }
+
+#event-map .listings .item small {
+  font-weight:400;
+}
+
+#event-map ::-webkit-scrollbar {
+  width:3px;
+  height:3px;
+  border-left:0;
+  background:rgba(0,0,0,0.1);
+}
+#event-map::-webkit-scrollbar-track {
+  background:none;
+}
+#event-map::-webkit-scrollbar-thumb {
+  background:#000;
+  border-radius:0;
+}
+
+#event-map .marker {
+  border: none;
+  cursor: pointer;
+  height: 56px;
+  width: 56px;
+  background-image: url(data:image/jpeg;base64,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);
+  background-color: rgba(0, 0, 0, 0);
+  background-size: cover;
+}
+
+#event-map .clearfix { display:block; }
+#event-map .clearfix:after {
+  content:'.';
+  display:block;
+  height:0;
+  clear:both;
+  visibility:hidden;
+}
+
+#event-map .search-bar {
+  position: relative;
+}
+
+#event-map input.search,
+#event-map button.toggle {
+  padding: 22px;
+  margin: 0;
+  font-size: var(--tmap-large-font);
+  line-height: 26px;
+  margin-top: -1px;
+  border: 2px solid var(--tmap-light-grey);
+}
+
+#event-map input.search {
+  padding-left: 49px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 0;
+  -webkit-appearance: none;
+  -webkit-border-radius: 0;
+}
+
+#event-map button.toggle {
+  color: var(--tmap-black);
+  background: var(--tmap-white);
+  display: block;
+  text-decoration: none;
+  text-align: center;
+}
+
+#event-map #show-map {
+  position: absolute;
+  width: 25%;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  border-left: none;
+}
+
+#event-map button.toggle:hover {
+  background-color: var(--tmap-off-white);
+  cursor: pointer;
+}
+
+#event-map .search-icon {
+  background-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 18 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M11.9649 11.2549H12.7549L17.7449 16.2549L16.2549 17.7449L11.2549 12.7549V11.9649L10.9849 11.6849C9.84488 12.6649 8.36488 13.2549 6.75488 13.2549C3.16488 13.2549 0.254883 10.3449 0.254883 6.75488C0.254883 3.16488 3.16488 0.254883 6.75488 0.254883C10.3449 0.254883 13.2549 3.16488 13.2549 6.75488C13.2549 8.36488 12.6649 9.84488 11.6849 10.9849L11.9649 11.2549ZM2.25488 6.75488C2.25488 9.24488 4.26488 11.2549 6.75488 11.2549C9.24488 11.2549 11.2549 9.24488 11.2549 6.75488C11.2549 4.26488 9.24488 2.25488 6.75488 2.25488C4.26488 2.25488 2.25488 4.26488 2.25488 6.75488Z' fill='%2374756E'/%3E%3C/svg%3E%0A");
+  background-size: cover;
+  width: 17.5px;
+  height: 17.5px;
+  position: absolute;
+  left: 17.5px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Marker tweaks */
+#event-map .mapboxgl-popup {
+  padding-bottom: 50px;
+}
+
+#event-map .mapboxgl-popup-close-button {
+  display:none;
+}
+#event-map .mapboxgl-popup-content {
+  font-family: 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+  font-weight: 300;
+  font-size: var(--tmap-small-font);
+  line-height: 22px;
+  min-width: var(--tmap-width);
+  border-radius: 10px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
+  max-height: calc(0.9 * var(--tmap-height));
+  overflow-y: scroll;
+  padding: 28px 30px;
+  padding-bottom: 0;
+}
+
+#event-map .mapboxgl-popup-content:after {
+  content: "";
+  display: block;
+  height: 30px;
+  width: 100%;
+}
+
+#event-map .event-info + .event-header {
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 2px solid var(--tmap-light-grey);
+}
+
+#event-map .event-header strong {
+  font-size: var(--tmap-large-font);
+  font-weight: 600;
+  line-height: 26px;
+}
+
+#event-map .event-header {
+  margin-bottom: 10px;
+}
+
+#event-map .mapboxgl-popup-content p:last-child {
+  margin-bottom: 0;
+}
+
+#event-map .mapboxgl-popup-content p:first-child {
+  margin-top: 0;
+}
+
+#event-map .mapboxgl-container .leaflet-marker-icon {
+  cursor:pointer;
+}
+
+#event-map .mapboxgl-popup-anchor-top > .mapboxgl-popup-content {
+  margin-top: 15px;
+}
+
+#event-map .mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
+  border-bottom-color: #fdde33;
+}
+
+#event-map .remote-events {
+  display: none; // HIDE FOR NOW
+
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  transform: translateX(calc(100% + 37px));
+  background: var(--tmap-white);
+  border-radius: 30px;
+  height: 65px;
+  width: 235px;
+  white-space: nowrap;
+  box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+
+#event-map .remote-events:hover {
+  background: var(--tmap-off-white);
+}
+
+#event-map .remote-events-text {
+  position: absolute;
+  top: 50%;
+  left: 73px;
+  transform: translateY(-50%);
+  font-size: var(--tmap-large-font);
+  font-weight: 600;
+}
+
+#event-map .icon-expand-more {
+  background-image: url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11.002 9.2625L16.5423 15L11.002 20.7375L12.7076 22.5L19.9657 15L12.7076 7.5L11.002 9.2625Z' fill='%2333342E'/%3E%3C/svg%3E%0A");
+  background-size: cover;
+}
+
+#event-map .registration-link {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--tmap-black);
+  text-decoration: none;
+  position: relative;
+}
+
+#event-map .registration-link .icon-expand-more {
+  width: 20px;
+  height: 30px;
+  display: inline-block;
+  position: absolute;
+  top: -2px;
+  right: -22px;
+  color: black;
+}
+
+#event-map .registration-link:hover {
+  cursor: pointer;
+}
+
+#event-map .remote-events-icon {
+  display: inline-block;
+  margin-top: 9px;
+  margin-left: 11px;
+  width: 47px;
+  height: 47px;
+  background-size: cover;
+  background-image: url(data:image/png;base64,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);
+}
+
+@media (max-width: 420px) {
+  #event-map .sidebar {
+    width: 100%;
+    max-width: none;
+  }
+
+  #event-map .heading {
+    padding-top: 10px;
+  }
+
+  #event-map input.search {
+    width: 75%;
+  }
+}
+
+@media (min-width: 420px) {
+  #event-map button.toggle {
+    display: none;
+  }
+  #event-map .events-mobile {
+    display: none;
+  }
+}
+
+#event-map .events-mobile {
+  margin-top: 5px;
+}
+
+#event-map .events-mobile p {
+  margin: 0;
+}
+
+#event-map .events-mobile p:last-of-type {
+  margin-bottom: 5px;
+}
+
+#event-map .toggle-div {
+  background: #fff;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+}
+
+#event-map #show-list {
+  border-left-width: 2px;
+}
+
+</style>
+
+<div id="event-map">
+  <div class='sidebar' id='event-list-sidebar'>
+    <div class='search-bar'>
+      <input class='search' type='search' placeholder='Search'>
+      <div class='search-icon'>
+      </div>
+      <button id="show-map" class="toggle">Map</button>
+    </div>
+    <div id='listings' class='listings'>
+    </div>
+    <div class='remote-events'>
+      <div class='remote-events-icon'>
+      </div>
+      <span class='remote-events-text'>
+        Remote events
+      </span>
+    </div>
+  </div>
+  <nav class="toggle-div">
+    <button id="show-list" class="toggle">Show List</button>
+  </nav>
+  <div id='map' class='map'>
+  </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+
+<script>
+if (typeof(String.prototype.trim) === "undefined") {
+  String.prototype.trim = function() {
+    return String(this).replace(/^\s+|\s+$/g, '');
+  };
+}
+
+if (typeof(Array.prototype.unique) === "undefined") {
+  Array.prototype.unique = function() {
+    return this.filter(function (value, index, self) {
+      return self.indexOf(value) === index;
+    });
+  }
+}
+
+/* Port of strftime() by T. H. Doan (https://thdoan.github.io/strftime/)
+ *
+ * Day of year (%j) code based on Joe Orost's answer:
+ * http://stackoverflow.com/questions/8619879/javascript-calculate-the-day-of-the-year-1-366
+ *
+ * Week number (%V) code based on Taco van den Broek's prototype:
+ * http://techblog.procurios.nl/k/news/view/33796/14863/calculate-iso-8601-week-and-year-in-javascript.html
+ */
+function strftime(sFormat, date) {
+  if (!(date instanceof Date)) date = new Date();
+  var nDay = date.getDay(),
+    nDate = date.getDate(),
+    nMonth = date.getMonth(),
+    nYear = date.getFullYear(),
+    nHour = date.getHours(),
+    aDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    aMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    aDayCount = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334],
+    isLeapYear = function() {
+      return (nYear%4===0 && nYear%100!==0) || nYear%400===0;
+    },
+    getThursday = function() {
+      var target = new Date(date);
+      target.setDate(nDate - ((nDay+6)%7) + 3);
+      return target;
+    },
+    zeroPad = function(nNum, nPad) {
+      return ((Math.pow(10, nPad) + nNum) + '').slice(1);
+    };
+  return sFormat.replace(/%[a-z]/gi, function(sMatch) {
+    return (({
+      '%a': aDays[nDay].slice(0,3),
+      '%A': aDays[nDay],
+      '%b': aMonths[nMonth].slice(0,3),
+      '%B': aMonths[nMonth],
+      '%c': date.toUTCString(),
+      '%C': Math.floor(nYear/100),
+      '%d': zeroPad(nDate, 2),
+      '%e': nDate,
+      '%F': date.toISOString().slice(0,10),
+      '%G': getThursday().getFullYear(),
+      '%g': (getThursday().getFullYear() + '').slice(2),
+      '%H': zeroPad(nHour, 2),
+      '%I': zeroPad((nHour+11)%12 + 1, 2),
+      '%j': zeroPad(aDayCount[nMonth] + nDate + ((nMonth>1 && isLeapYear()) ? 1 : 0), 3),
+      '%k': nHour,
+      '%l': (nHour+11)%12 + 1,
+      '%m': zeroPad(nMonth + 1, 2),
+      '%n': nMonth + 1,
+      '%M': zeroPad(date.getMinutes(), 2),
+      '%p': (nHour<12) ? 'AM' : 'PM',
+      '%P': (nHour<12) ? 'am' : 'pm',
+      '%s': Math.round(date.getTime()/1000),
+      '%S': zeroPad(date.getSeconds(), 2),
+      '%u': nDay || 7,
+      '%V': (function() {
+              var target = getThursday(),
+                n1stThu = target.valueOf();
+              target.setMonth(0, 1);
+              var nJan1 = target.getDay();
+              if (nJan1!==4) target.setMonth(0, 1 + ((4-nJan1)+7)%7);
+              return zeroPad(1 + Math.ceil((n1stThu-target)/604800000), 2);
+            })(),
+      '%w': nDay,
+      '%x': date.toLocaleDateString(),
+      '%X': date.toLocaleTimeString(),
+      '%y': (nYear + '').slice(2),
+      '%Y': nYear,
+      '%z': date.toTimeString().replace(/.+GMT([+-]\d+).+/, '$1'),
+      '%Z': date.toTimeString().replace(/.+\((.+?)\)$/, '$1')
+    }[sMatch] || '') + '') || sMatch;
+  });
+}
+
+function htmlEscape(s) {
+  if (!s) return '';
+  return s.
+    replace(/&/g, "&amp;").
+    replace(/</g, "&lt;").
+    replace(/>/g, "&gt;").
+    replace(/"/g, "&quot;").
+    replace(/'/g, "&#x27;").
+    replace(/\//g, "&#x2F;");
+}
+
+function linkEscape(s) {
+  if (!s) return '';
+  const escaped = s.trim().
+    replace(/</g, "&lt;").
+    replace(/>/g, "&gt;").
+    replace(/"/g, "&quot;").
+    replace(/'/g, "&#x27;");
+  if (escaped.match(/^\s*javascript/i))
+    return '';
+  else if (escaped.match(/^bit\.ly/))
+    return 'https://'+escaped;
+  else
+    return escaped;
+}
+
+function emailLink(email) {
+  return `<a href="mailto:${htmlEscape(email)}">${htmlEscape(email)}</a>`;
+}
+
+function parseDate(s) {
+  var parts = s.split('-');
+  return new Date(parts[0], parts[1] - 1, parts[2]);
+}
+
+function eventName(t) {
+  return `<strong class='event-name'>${htmlEscape(t.event_title)}</strong>`;
+}
+
+function eventInfo(t) {
+  return `
+    <dl>
+      <dt>Description</dt>
+      <dd>${htmlEscape(t.description)}</dd>
+
+      <dt>Event Type</dt>
+      <dd>${htmlEscape(t.event_type)}</dd>
+
+      <dt>Location</dt>
+      <dd>${t.location_name}<br>${t.address}<br>${t.city}, ${t.state} ${t.zip_code}</dd>
+
+      <dt>Date and Time</dt>
+      <dd>
+        ${new Date(t.start_date).toLocaleString()} to <br>
+        ${new Date(t.end_date).toLocaleString()}
+      </dd>
+
+      <dt>Link</dt>
+      <dd><a href='${linkEscape(t.registration_link)}'>${htmlEscape(t.registration_link)}</a></dd>
+
+    </dl>
+  `;
+}
+
+function geoJSONFeature(t) {
+  return {
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [t.longitude, t.latitude]
+    },
+    "properties": t
+  }
+}
+
+function showMapMobile() {
+  $(".sidebar").css({"z-index": "0"});
+}
+
+function showListMobile() {
+  $(".sidebar").css({"z-index": "9999"});
+}
+
+$(document).ready(function() {
+  $("#show-map").click(function(){
+    showMapMobile();
+  });
+
+  $("#show-list").click(function(){
+    showListMobile();
+  });
+
+  $.ajax({
+      type: "GET",
+      url: "https://sunrise-trainings-json.s3.amazonaws.com/events.json",
+      dataType: "json",
+      success: function(data) {
+        initMap(data.map_data);
+      }
+   });
+});
+
+function initMap(events) {
+  mapboxgl.accessToken = 'pk.eyJ1IjoiYWxhdXJlbnppIiwiYSI6ImNqdDlna2o5ZTA0M2gzeW8zcWQwN3hnNDAifQ.uAXKXOB2I-G3gBXrkXWOrw';
+
+  var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v9',
+    center: [-112.030293, 39.585733],
+    zoom: 2.5
+  });
+
+  // Add zoom and rotation controls to the map.
+  map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+
+  var eventsByPos = {};
+  var keys = [];
+
+  for (var i = 0; i < events.length; i++) {
+    var t = events[i];
+    var key = `${t.latitude}, ${t.longitude}`;
+    if (!eventsByPos[key]) {
+      eventsByPos[key] = {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [t.longitude, t.latitude]
+        },
+        "properties": {
+          "events": []
+        }
+      };
+      keys.push(key);
+    }
+    eventsByPos[key].properties.events.push(t);
+  }
+
+  var features = [];
+  for (var i = 0; i < keys.length; i++) {
+    var feature = eventsByPos[keys[i]];
+    for (var j = 0; j < feature.properties.events.length; j++) {
+      var event = feature.properties.events[j];
+      event['position'] = i;
+      event['subindex'] = j;
+    }
+    features.push(feature);
+  }
+
+  map.on('load', function (e) {
+    map.addSource("places", {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": features
+       }
+    });
+
+    buildLocationList(features, events);
+
+    var eventList = new List('event-list-sidebar', {
+      listClass: 'listings',
+      valueNames: ['event-name']
+    });
+  });
+
+  map.on('moveend', function() {
+    var my = $('#event-map .mapboxgl-popup')[0];
+    if (typeof my !== "undefined") {
+      my.style.transform = my.style.transform.replace("-50%", "calc(-50% - 0.5px)");
+    }
+  });
+
+  // This is where your interactions with the symbol layer used to be
+  // Now you have interactions with DOM markers instead
+  features.forEach(function(marker, i) {
+    // Create an img element for the marker
+    var el = document.createElement('div');
+    el.id = "marker-" + i;
+    el.className = 'marker';
+    // Add markers to the map at all points
+    new mapboxgl.Marker(el, {offset: [0, -23]})
+        .setLngLat(marker.geometry.coordinates)
+        .addTo(map);
+
+    el.addEventListener('click', function(e){
+        // 1. Close all other popups and display popup for clicked store
+        createPopUp(marker);
+
+        // 2. Fly to the point
+        flyToStore(marker);
+
+        // 3. Highlight listing in sidebar (and remove highlight for all other listings)
+        e.stopPropagation();
+        $('#event-map .active').removeClass('active');
+        var link = $('.listing-for-feature-'+ i);
+        if (link.length) {
+          $(link[0]).addClass('active');
+          link[0].scrollIntoView({ block: 'nearest', inline: 'start' });
+        }
+    });
+  });
+
+  function flyToStore(currentFeature) {
+    map.flyTo({ center: currentFeature.geometry.coordinates });
+  }
+
+  function createPopUp(currentFeature) {
+    var popUps = document.getElementsByClassName('mapboxgl-popup');
+    if (popUps[0]) popUps[0].remove();
+
+    var ts = currentFeature.properties.events;
+    var popupHtml = '<div class="events-sublist">';
+    for (var i = 0; i < ts.length; i++) {
+      var t = ts[i];
+      popupHtml += `<div class='event-header event-header-${i}'>${eventName(t)}</div>`;
+      popupHtml += `<div class='event-info event-info-${i}'>${eventInfo(t)}</div>`;
+    }
+    popupHtml += '</div>';
+
+    var popup = new mapboxgl.Popup({ closeOnClick: true, anchor: "left" })
+      .on('close', function() { $('#event-map .item').removeClass('active'); })
+      .setLngLat(currentFeature.geometry.coordinates)
+      .setHTML(popupHtml)
+      .addTo(map);
+  }
+
+  function buildLocationList(features, events) {
+    for (var i = 0; i < events.length; i++) {
+      var t = events[i];
+      var listings = document.getElementById('listings');
+      var listing = listings.appendChild(document.createElement('div'));
+      listing.id = "listing-" + i;
+      listing.className = "item listing-for-feature-" + t.position;
+      listing.innerHTML = eventName(t);
+      listing.dataPosition = t.position;
+      listing.dataSubindex = t.subindex;
+
+      listing.addEventListener('click', function(e){
+        // Update the currentFeature to the store associated with the clicked link
+        var clickedListing = features[this.dataPosition];
+        var j = this.dataSubindex;
+
+        // 1. Fly to the point
+        flyToStore(clickedListing);
+
+        // 2. Close all other popups and display popup for clicked store
+        createPopUp(clickedListing);
+
+        // 3. Highlight listing in sidebar (and remove highlight for all other listings)
+        $('#event-map .active').removeClass('active');
+        $(this).addClass('active');
+
+        // 4. scroll to entry if it's not visible
+        var sublisting = $(`.events-sublist .event-info-${j}`);
+        if (j > 0 && sublisting.length) {
+          sublisting[0].scrollIntoView({block: "nearest", inline: "start"});
+        }
+      });
+    }
+  }
+}
+</script>
