@@ -68,7 +68,6 @@ class Event < Airrecord::Table
     return {
       start_date: self['start_at'],
       end_date: self['end_at'],
-      time_zone: self['timezone'],
       city: self['city'],
       state: self['state'],
       address: self['address'],
