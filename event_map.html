@@ -80,6 +80,7 @@ h3 {
 #event-map .event-card-header-title {
   font-weight: bold;
   font-size: var(--emap-large-font);
+  max-width: calc(100% - 4rem);
 }
 #event-map .event-card-header-type {
   font-weight: 600;
@@ -125,6 +126,7 @@ h3 {
   top: 0;
   height: var(--emap-topbar-height);
   padding: var(--emap-small-font);
+  white-space: nowrap;
 }
 
 #event-map .event-map-sidebar {
@@ -375,6 +377,34 @@ h3 {
 
 #event-map .mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
   border-bottom-color: #fdde33;
+}
+
+@media (max-width: 768px) {
+  #event-map .event-type-search-bar input {
+    font-size: 16px;
+  }
+  #event-map .event-map-topbar-text {
+    display: none;
+  }
+}
+@media (max-width: 480px) {
+  #event-map .event-map-sidebar {
+    width: 100%;
+    top: 112px;
+  }
+  #event-map .event-type-search-bar input {
+    margin-bottom: 5px;
+  }
+  #event-map .event-map-topbar {
+    height: 112px;
+    white-space: normal;
+  }
+  #event-map .event-map-map {
+    display: none;
+  }
+  #event-map .event-map-topbar-text {
+    display: none;
+  }
 }
 
 </style>
