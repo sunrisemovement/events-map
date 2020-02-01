@@ -7,3 +7,4 @@ gem 'dotenv'
 
 gem 'pry'
 gem 'rb-readline'
+gem 'sinatra' # for heroku deployment
