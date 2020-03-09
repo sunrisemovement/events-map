@@ -18,7 +18,7 @@ def query_mapbox(loc)
   resp['features'].first
 end
 
-class Event < Airrecord::Table
+class Airtable < Airrecord::Table
   self.base_key = ENV['AIRTABLE_APP_KEY']
   self.table_name = 'Events'
 
@@ -82,7 +82,7 @@ class Event < Airrecord::Table
     }
   end
 
-  def self.map_json
-    all.select(&:should_appear_on_map?).map(&:map_entry).sort_by { |e| [e[:start_date], e[:city]] }
+  def self.map_entries
+    all.select(&:should_appear_on_map?).map(&:map_entry)
   end
 end
