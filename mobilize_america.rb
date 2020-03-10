@@ -1,5 +1,6 @@
 require 'httparty'
 require 'dotenv'
+require 'tzinfo'
 require 'pry'
 
 Dotenv.load
@@ -46,9 +47,11 @@ class MobilizeAmericaEvent
       longitude: longitude
     }
     if slot = timeslots.first
-      # TODO: this is wrong, need to ensure we get time local to event
-      entry[:start_date] = slot[:start_date].strftime('%FT%T%:z')
-      entry[:end_date] = slot[:end_date].strftime('%FT%T%:z') rescue ''
+      tz = TZInfo::Timezone.get(data['timezone'])
+      start_date = tz.to_local(slot[:start_date])
+      end_date = tz.to_local(slot[:end_date]) rescue nil
+      entry[:start_date] = start_date.strftime('%FT%T%:z')
+      entry[:end_date] = end_date.strftime('%FT%T%:z') rescue ''
     end
     entry
   end

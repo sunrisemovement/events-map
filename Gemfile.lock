@@ -21,6 +21,7 @@ GEM
     aws-sigv4 (1.1.0)
       aws-eventstream (~> 1.0, >= 1.0.2)
     coderay (1.1.2)
+    concurrent-ruby (1.1.6)
     connection_pool (2.2.2)
     dotenv (2.7.5)
     faraday (0.17.0)
@@ -53,6 +54,8 @@ GEM
       rack-protection (= 2.0.8.1)
       tilt (~> 2.0)
     tilt (2.0.10)
+    tzinfo (2.0.1)
+      concurrent-ruby (~> 1.0)
 
 PLATFORMS
   ruby
@@ -65,6 +68,7 @@ DEPENDENCIES
   pry
   rb-readline
   sinatra
+  tzinfo
 
 RUBY VERSION
    ruby 2.6.3p62
