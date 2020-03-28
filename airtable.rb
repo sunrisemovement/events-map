@@ -72,7 +72,7 @@ class Airtable < Airrecord::Table
       state: self['state'],
       address: self['address'],
       zip_code: self['zip_code'],
-      event_type: self['event_type'],
+      event_type: 'Airtable Event',#self['event_type'],
       event_title: self['title'],
       description: self['description_text'],
       location_name: self['location_name'],

@@ -38,7 +38,7 @@ class MobilizeAmericaEvent
       state: location['region'],
       address: location['address_lines'].select{|l| l.size > 0}.join("\n"),
       zip_code: location['postal_code'],
-      event_type: event_type,
+      event_type: 'MobilizeAmerica Event',#event_type,
       event_title: data['title'],
       description: data['description'],
       location_name: location['venue'],
