@@ -12,7 +12,7 @@ class ActionNetworkEvent
   end
 
   def start_time
-    Time.parse(data['start'])
+    Time.parse(data['start_date'])
   end
 
   def is_public?
@@ -20,7 +20,7 @@ class ActionNetworkEvent
   end
 
   def should_appear?
-    is_public?# && start_time >= Date.today
+    !data['start_date'].nil? && is_public? && (Date.parse(data['start_date']) >= Date.today - 150)
   end
 
   def location
@@ -35,15 +35,26 @@ class ActionNetworkEvent
     location['location']['longitude']
   end
 
+  def description
+    if desc = data['description']
+      desc.gsub!(/<\/?[^>]*>/, "")
+      if desc.length > 140
+        "#{desc[0..137]}..."
+      else
+        desc
+      end
+    end
+  end
+
   def map_entry
     {
       city: location['locality'],
       state: location['region'],
-      address: location['address_lines'].select{|l| l.size > 0}.join("\n"),
+      address: (location['address_lines'] || []).select{|l| l.size > 0}.join("\n"),
       zip_code: location['postal_code'],
       event_type: 'ActionNetwork Event',
       event_title: data['title'],
-      description: data['description'],
+      description: description,
       location_name: location['venue'],
       registration_link: data['browser_url'],
       latitude: latitude,
@@ -79,9 +90,7 @@ class ActionNetworkRequest
   end
 
   def results
-    r = response["_embedded"]["osdi:events"].map { |e| ActionNetworkEvent.new(e) }
-    binding.pry
-    r
+    response["_embedded"]["osdi:events"].map { |e| ActionNetworkEvent.new(e) }
   end
 end
 
