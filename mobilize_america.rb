@@ -8,6 +8,30 @@ Dotenv.load
 MA_SUNRISE_ID = ENV['MOBILIZE_AMERICA_ORG_ID']
 MA_SUNRISE_KEY = ENV['MOBILIZE_AMERICA_API_KEY']
 
+class Timeslot
+  attr_reader :data
+
+  def initialize(data)
+    @data = data
+  end
+
+  def start_date
+    Time.at(data['start_date'])
+  end
+
+  def end_date
+    Time.at(data['end_date']) if data['end_date']
+  end
+
+  def finished?
+    if end_date
+      Time.now > end_date
+    else
+      Time.now > start_date
+    end
+  end
+end
+
 class MobilizeAmericaEvent
   attr_reader :data
 
@@ -16,16 +40,15 @@ class MobilizeAmericaEvent
   end
 
   def should_appear?
-    data['visibility'] == 'PUBLIC' && data['address_visibility'] == 'PUBLIC'
+    data['visibility'] == 'PUBLIC' && data['address_visibility'] == 'PUBLIC' && next_timeslot
   end
 
   def timeslots
-    data['timeslots'].map { |slot| {
-      start_date: Time.at(slot['start_date']),
-      end_date: (Time.at(slot['end_date']) if slot['end_date'])
-    }}.select { |slot|
-      (slot[:end_date] || slot[:start_date]) >= Time.now
-    }
+    data['timeslots'].map { |slot| Timeslot.new(slot) }
+  end
+
+  def next_timeslot
+    timeslots.reject(&:finished?).sort_by(&:start_date).first
   end
 
   def event_type
@@ -46,7 +69,7 @@ class MobilizeAmericaEvent
       latitude: latitude,
       longitude: longitude
     }
-    if slot = timeslots.first
+    if slot = next_timeslot
       tz = TZInfo::Timezone.get(data['timezone'])
       start_date = tz.to_local(slot[:start_date])
       end_date = tz.to_local(slot[:end_date]) rescue nil
