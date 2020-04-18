@@ -677,6 +677,13 @@ function initMap(events) {
         if (coords) zipCoords.push(coords);
       }
 
+      const searchRadius = (
+        params.get('searchRadius') ||
+        params.get('searchRadiusKm') ||
+        params.get('searchRadiusKM') ||
+        25
+      );
+
       const remainingEvents = events.filter((ev) => {
         // If there's no search, everything is displayed
         if (!eventSearch) return true;
@@ -689,7 +696,7 @@ function initMap(events) {
         // If the search text includes a zip code and we're within 25km, display it
         for (let coord of zipCoords) {
           const distance = haversineDistance(coord, [ev.latitude, ev.longitude]);
-          if (distance <= 25) {
+          if (distance <= searchRadius) {
             return true;
           }
         }
