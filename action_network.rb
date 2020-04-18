@@ -20,7 +20,7 @@ class ActionNetworkEvent
   end
 
   def should_appear?
-    !data['start_date'].nil? && is_public? && (Date.parse(data['start_date']) >= Date.today - 150)
+    !data['start_date'].nil? && is_public? && Date.parse(data['start_date']) >= Date.today
   end
 
   def location
