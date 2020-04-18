@@ -124,6 +124,8 @@ h3 {
 #event-map .event-map-topbar {
   position: absolute;
   top: 0;
+  left: 0;
+  right: 0;
   height: var(--emap-topbar-height);
   padding: var(--emap-small-font);
   white-space: nowrap;
@@ -199,13 +201,9 @@ h3 {
   margin-right: 5px;
 }
 
-#event-map .event-type-search-bar {
+#event-map .event-search-bar {
   position: relative;
   margin-right: 5px;
-  display: inline;
-}
-
-#event-map .event-type-select-wrapper {
   display: inline;
 }
 
@@ -380,25 +378,12 @@ h3 {
   border-bottom-color: #fdde33;
 }
 
-@media (max-width: 768px) {
-  #event-map .event-type-search-bar input {
-    font-size: 16px;
-  }
-  #event-map .event-map-topbar-text {
-    display: none;
-  }
-}
 @media (max-width: 480px) {
   #event-map .event-map-sidebar {
     width: 100%;
-    top: 112px;
   }
-  #event-map .event-type-search-bar input {
-    margin-bottom: 5px;
-  }
-  #event-map .event-map-topbar {
-    height: 112px;
-    white-space: normal;
+  #event-map #event-text-search {
+    width: 100%;
   }
   #event-map .event-map-map {
     display: none;
@@ -415,16 +400,9 @@ h3 {
     <span class='event-map-topbar-text'>
       Filter events:
     </span>
-    <div class='event-type-search-bar'>
+    <div class='event-search-bar'>
       <input id='event-text-search' class='search' type='search' placeholder='zipcode, state, or event name'>
       <div class='search-icon'>
-      </div>
-    </div>
-    <div class='event-type-select-wrapper'>
-      <div class='select'>
-        <select id='event-type-select'>
-          <option value=''>All Event Types</option>
-        </select>
       </div>
     </div>
   </div>
@@ -517,9 +495,6 @@ function linkEscape(s) {
 function eventCard(ev) {
   return `<div class='event-card-header'>
     <a target='_blank' href='${linkEscape(ev.registration_link)}' class='event-card-header-rsvp event-button-secondary'>RSVP</a>
-    <div class='event-card-header-type'>
-      ${htmlEscape(ev.event_type)}
-    </div>
     <div class='event-card-header-title'>
       ${htmlEscape(ev.event_title)}
     </div>
@@ -597,11 +572,9 @@ function initMap(events) {
 
   var eventsByPos = {};
   var keys = [];
-  var eventTypes = new Set([]);
 
   for (var i = 0; i < events.length; i++) {
     var t = events[i];
-    eventTypes.add(t.event_type);
     var key = `${t.latitude}, ${t.longitude}`;
     if (!eventsByPos[key]) {
       eventsByPos[key] = {
@@ -618,11 +591,6 @@ function initMap(events) {
     }
     eventsByPos[key].properties.events.push(t);
   }
-  eventTypes = Array.from(eventTypes);
-  eventTypes.sort();
-  eventTypes.forEach((et) => {
-    $('#event-type-select').append(`<option value='${et}'>${et}</option>`);
-  });
 
   function setQueryParam(name, value) {
     const params = new URLSearchParams(window.location.search);
@@ -662,12 +630,10 @@ function initMap(events) {
 
     function resetFilters() {
       const params = new URLSearchParams(window.location.search);
-      const eventType = params.get('eventType');
       const eventSearch = params.get('eventSearch');
-      $('#event-type-select').val(eventType);
       $('#event-text-search').val(eventSearch);
 
-      if (eventType || eventSearch) {
+      if (eventSearch) {
         $('#event-map').addClass('is-filtering');
       } else {
         $('#event-map').removeClass('is-filtering');
@@ -682,9 +648,6 @@ function initMap(events) {
       $('.marker').addClass('is-filtered');
 
       const remainingEvents = events.filter((ev) => {
-        if (eventType && ev.event_type != eventType) {
-          return false;
-        }
         if (eventSearch) {
           for (let field of ['zip_code', 'event_title', 'state'])
             if (ev[field].toLowerCase().search(eventSearch.toLowerCase()) >= 0)
@@ -711,11 +674,6 @@ function initMap(events) {
         maxZoom: 7
       });
     }
-
-    $('#event-type-select').change((jsEv) => {
-      setQueryParam('eventType', $(jsEv.currentTarget).val());
-      resetFilters();
-    });
 
     $('#event-text-search').on('input change', (jsEv) => {
       setQueryParam('eventSearch', $(jsEv.currentTarget).val());
