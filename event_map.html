@@ -514,6 +514,28 @@ function linkEscape(s) {
     return escaped;
 }
 
+function eventAddress(ev) {
+  const parts = [];
+
+  if (ev.location_name) {
+    parts.push(htmlEscape(ev.location_name));
+  }
+
+  if (ev.address) {
+    parts.push(htmlEscape(ev.address));
+  }
+
+  if (ev.city && ev.state && ev.zip_code) {
+    parts.push(`${htmlEscape(ev.city)}, ${htmlEscape(ev.state)} ${htmlEscape(ev.zip_code)}`);
+  } else if (ev.city && ev.state) {
+    parts.push(`${htmlEscape(ev.city)}, ${htmlEscape(ev.state)}`);
+  } else if (ev.state) {
+    parts.push(htmlEscape(ev.state));
+  }
+
+  return parts.join("<br>");
+}
+
 function eventCard(ev) {
   return `<div class='event-card-header'>
     <a target='_blank' href='${linkEscape(ev.registration_link)}' class='event-card-header-rsvp event-button-secondary'>RSVP</a>
@@ -529,11 +551,7 @@ function eventCard(ev) {
       ${timeStr(ev.start_date)}
     </div>
     <div class='event-card-body-addr'>
-      ${htmlEscape(ev.location_name)}
-      <br>
-      ${htmlEscape(ev.address)}
-      <br>
-      ${htmlEscape(ev.city)}, ${htmlEscape(ev.state)} ${htmlEscape(ev.zip_code)}
+      ${eventAddress(ev)}
     </div>
     <div class='event-card-body-desc'>
       ${htmlEscape(ev.description)}
