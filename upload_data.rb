@@ -10,7 +10,11 @@ s3 = Aws::S3::Client.new(
   region: ENV['AWS_REGION']
 )
 
-entries = Airtable.map_entries + MobilizeAmerica.map_entries + ActionNetwork.map_entries
+at = Airtable.map_entries
+ma = MobilizeAmerica.map_entries
+an = ActionNetwork.map_entries
+
+entries = at + ma + an
 entries.sort_by! { |e| [e[:start_date], e[:city]] }
 map_json = JSON.dump({
   updated_at: Time.now.to_s,

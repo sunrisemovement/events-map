@@ -40,7 +40,7 @@ class MobilizeAmericaEvent
   end
 
   def should_appear?
-    data['visibility'] == 'PUBLIC' && data['address_visibility'] == 'PUBLIC' && next_timeslot
+    data['visibility'] == 'PUBLIC' && data['address_visibility'] == 'PUBLIC' && start_date
   end
 
   def timeslots
@@ -55,8 +55,24 @@ class MobilizeAmericaEvent
     data['event_type']
   end
 
+  def tz
+    TZInfo::Timezone.get(data['timezone']) rescue nil
+  end
+
+  def start_date
+    if tz && slot = next_timeslot
+      tz.to_local(slot.start_date).strftime('%FT%T%:z')
+    end
+  end
+
+  def end_date
+    if tz && slot = next_timeslot
+      tz.to_local(slot.end_date).strftime('%FT%T%:z') rescue nil
+    end
+  end
+
   def map_entry
-    entry = {
+    {
       city: location['locality'],
       state: location['region'],
       address: location['address_lines'].select{|l| l.size > 0}.join("\n"),
@@ -66,17 +82,11 @@ class MobilizeAmericaEvent
       description: data['description'],
       location_name: location['venue'],
       registration_link: data['browser_url'],
+      start_date: start_date,
+      end_date: end_date,
       latitude: latitude,
       longitude: longitude
     }
-    if slot = next_timeslot
-      tz = TZInfo::Timezone.get(data['timezone'])
-      start_date = tz.to_local(slot[:start_date])
-      end_date = tz.to_local(slot[:end_date]) rescue nil
-      entry[:start_date] = start_date.strftime('%FT%T%:z')
-      entry[:end_date] = end_date.strftime('%FT%T%:z') rescue ''
-    end
-    entry
   end
 
   def location
