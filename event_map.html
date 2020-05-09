@@ -44,16 +44,81 @@ h3 {
   --emap-black: #33342E;
   --emap-off-white: #F4F4F4;
   --emap-light-grey: #E0E0E0;
-  --emap-yellow: #FFDE16;
+  //--emap-yellow: #FFDE16;
+  --emap-yellow: #FFDD4F;
   --emap-secondary: #8F0D56;
   --emap-secondary2: #E3EDDF;
 
-  --emap-small-font: 14px;
-  --emap-large-font: 18px;
+  --emap-small-font: 15px;
+  --emap-large-font: 24px;
 
-  --emap-width: 400px;
-  --emap-topbar-height: 68px;
-  --emap-bottom-padding: 24px;
+  --emap-width: 625px;
+  --emap-list-vertical-padding: 36px;
+  --emap-list-horizontal-padding: 72px;
+}
+
+/*
+<svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M1 7L6 2L11 7" stroke="#33342E" stroke-width="2"/>
+</svg>
+*/
+
+/* Vector 1 */
+
+.input {
+  margin: 0;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  box-shadow: none;
+  display: inline-flex;
+  font-size: 1rem;
+  height: 2.5em;
+  justify-content: flex-start;
+  line-height: 1.5;
+  padding-bottom: calc(0.5em - 1px);
+  padding-left: calc(0.75em - 1px);
+  padding-right: calc(0.75em - 1px);
+  padding-top: calc(0.5em - 1px);
+  position: relative;
+  vertical-align: top;
+  background-color: white;
+  border-color: #dbdbdb;
+  border-radius: 4px;
+  color: #363636;
+  box-shadow: inset 0 0.0625em 0.125em rgba(10, 10, 10, 0.05);
+  max-width: 100%;
+  width: 100%;
+  font-family: BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+.input::-moz-placeholder,
+.input::-webkit-input-placeholder,
+.input:-moz-placeholder,
+.input:-ms-input-placeholder {
+  color: rgba(54, 54, 54, 0.3);
+}
+
+.input:hover {
+  border-color: #b5b5b5;
+}
+.input:focus {
+  outline: none;
+  border-color: #3273dc;
+  box-shadow: 0 0 0 0.125em rgba(50, 115, 220, 0.25);
+}
+.is-medium.input {
+  font-size: 1.25rem;
+}
+
+.is-large.input {
+  font-size: 1.5rem;
+}
+.input.is-rounded {
+  border-radius: 290486px;
+  padding-left: calc(calc(0.75em - 1px) + 0.375em);
+  padding-right: calc(calc(0.75em - 1px) + 0.375em);
 }
 
 #event-map *::-webkit-search-cancel-button {
@@ -65,34 +130,32 @@ h3 {
 }
 
 #event-map .event-card {
-  border: 1px solid var(--emap-light-grey);
-  box-shadow: 0 0.5px 0 0 #ffffff inset, 0 1px 2px 0 var(--emap-light-grey);
-  margin: var(--emap-small-font);
+  padding: var(--emap-list-vertical-padding) var(--emap-list-horizontal-padding);
+  border-bottom: 1px solid #ccc;
+}
+
+#event-map .event-card.active {
+  background: rgb(255,251,234);
 }
 
 #event-map .event-card-header {
-  font-weight: 600;
-  background: var(--emap-yellow);
-  padding: var(--emap-small-font);
-  border-bottom: 1px solid var(--emap-light-grey);
+  margin-bottom: 15px;
   position: relative;
 }
 
 #event-map .event-card-header-title {
   font-weight: bold;
   font-size: var(--emap-large-font);
-  max-width: calc(100% - 4rem);
+  line-height: calc(var(--emap-large-font) + 2px);
+  max-width: calc(100% - 10rem);
 }
-#event-map .event-card-header-type {
-  font-weight: 600;
-  font-size: var(--emap-small-font);
-}
+
 #event-map .event-card-header-rsvp {
+  right: 0;
+
   position: absolute;
-  right: var(--emap-small-font);
   top: 50%;
   transform: translateY(-50%);
-  padding: 5px 10px;
 }
 
 #event-map .event-button-secondary {
@@ -101,43 +164,68 @@ h3 {
   font-weight: bold;
   text-decoration: none;
   background: var(--emap-secondary);
-  font-size: var(--emap-small-font);
   text-align: center;
+
+  font-size: var(--emap-large-font);
+  line-height: calc(var(--emap-large-font) + 4px);
+  padding: 11px 36px;
 }
 #event-map .event-button-secondary:hover {
   background: #ab4a80;
 }
 
 #event-map .event-card-body {
-  background: var(--emap-white);
-  padding: var(--emap-small-font);
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--emap-small-font);
+  line-height: 21px;
 }
 #event-map .event-card-body-date,
-#event-map .event-card-body-time {
+#event-map .event-card-body-addr {
   font-weight: 600;
 }
 #event-map .event-card-body-addr {
-  margin-bottom: 1rem;
+  margin-bottom: 15px;
 }
 
-#event-map .event-map-topbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--emap-topbar-height);
-  padding: var(--emap-small-font);
-  background: var(--emap-white);
-  white-space: nowrap;
+
+#event-map .caret {
+ width: 12px;
+ height: 9px;
+ background-position-x: 12px;
+ background-position-y: 1px;
+ display: inline-block;
+ background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%2372726F' stroke-width='2'/%3E%3C/svg%3E%0A"); 
+}
+
+#event-map .caret.caret-up {
+  transform: matrix(1, 0, 0, -1, 0, 0);
+}
+
+#event-map .desc-toggle {
+  color: rgb(114,114,111);
+  font-weight: bold;
+  line-height: 19px;
+  cursor: pointer;
+}
+#event-map .desc-toggle:hover {
+  opacity: 0.9;
+}
+#event-map .desc-open .desc-toggle.desc-toggle-open {
+  display: none;
+}
+
+#event-map .event-card-body-desc {
+  font-family: "Source Serif Pro";
+  display: none;
+}
+#event-map .desc-open .event-card-body-desc {
+  display: block;
 }
 
 #event-map .event-map-sidebar {
   position: absolute;
   width: var(--emap-width);
   background: var(--emap-white);
-  top: var(--emap-topbar-height);
+  top: 0;
   bottom: 0;
   overflow-y: scroll;
   left: 0;
@@ -153,7 +241,7 @@ h3 {
 #event-map .event-map-map {
   position: absolute;
   width: calc(100% - var(--emap-width));
-  top: var(--emap-topbar-height);
+  top: 0;
   left: var(--emap-width);
   bottom: 0;
   border-top: 1px solid var(--emap-light-grey);
@@ -163,6 +251,7 @@ h3 {
   font-family: 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
   background-color: var(--emap-white);
   border: 1px solid var(--emap-white);
+  padding-top: 112px;
 }
 
 #event-map ::-webkit-scrollbar {
@@ -210,16 +299,8 @@ h3 {
   visibility:hidden;
 }
 
-#event-map .event-map-topbar-text {
-  font-size: 22px;
-  font-weight: bold;
-  margin-right: 5px;
-}
-
 #event-map .event-search-bar {
   position: relative;
-  margin-right: 5px;
-  display: inline;
 }
 
 #event-map .select::after {
@@ -303,33 +384,17 @@ h3 {
   outline: none;
 }
 
-#event-map input.search,
-#event-map button.toggle {
-  padding: 5px;
-  margin: 0;
-  font-size: var(--emap-large-font);
-  line-height: 26px;
-  margin-top: -1px;
-  border: 2px solid var(--emap-light-grey);
+
+#event-map .event-map-sideheader {
+  background: var(--emap-yellow);
+  padding: var(--emap-list-vertical-padding) var(--emap-list-horizontal-padding);
+  width: calc(var(--emap-width) - 2*var(--emap-list-horizontal-padding));
+  position: fixed;
+  z-index: 1;
 }
 
-#event-map input.search {
-  padding-left: 49px;
-  box-sizing: border-box;
-  border-radius: 0;
-  -webkit-appearance: none;
-  -webkit-border-radius: 0;
-}
-
-#event-map .search-icon {
-  background-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 18 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M11.9649 11.2549H12.7549L17.7449 16.2549L16.2549 17.7449L11.2549 12.7549V11.9649L10.9849 11.6849C9.84488 12.6649 8.36488 13.2549 6.75488 13.2549C3.16488 13.2549 0.254883 10.3449 0.254883 6.75488C0.254883 3.16488 3.16488 0.254883 6.75488 0.254883C10.3449 0.254883 13.2549 3.16488 13.2549 6.75488C13.2549 8.36488 12.6649 9.84488 11.6849 10.9849L11.9649 11.2549ZM2.25488 6.75488C2.25488 9.24488 4.26488 11.2549 6.75488 11.2549C9.24488 11.2549 11.2549 9.24488 11.2549 6.75488C11.2549 4.26488 9.24488 2.25488 6.75488 2.25488C4.26488 2.25488 2.25488 4.26488 2.25488 6.75488Z' fill='%2374756E'/%3E%3C/svg%3E%0A");
-  background-size: cover;
-  width: 17.5px;
-  height: 17.5px;
-  position: absolute;
-  left: 17.5px;
-  top: 50%;
-  transform: translateY(-50%);
+#event-map #event-text-search {
+  width: 100%;
 }
 
 /* Marker tweaks */
@@ -349,7 +414,7 @@ h3 {
   min-width: 200px;
   border-radius: 10px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
-  max-height: calc(0.9 * var(--emap-height));
+  max-height: 400px;
   overflow-y: scroll;
   padding: 18px 20px;
   padding-bottom: 0;
@@ -359,7 +424,7 @@ h3 {
   font-size: var(--emap-large-font);
   font-weight: bold;
 }
-#event-map .event-tooltip-body-rsvp {
+#event-map .event-tooltip + .event-tooltip {
   margin-top: 1rem;
 }
 #event-map .event-tooltip-body-rsvp a {
@@ -369,9 +434,8 @@ h3 {
 }
 
 #event-map .event-tooltip-body-time {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  white-space: nowrap;
 }
 
 #event-map .mapboxgl-popup-content:after {
@@ -397,14 +461,7 @@ h3 {
   #event-map .event-map-sidebar {
     width: 100%;
   }
-  #event-map #event-text-search {
-    font-size: 16px;
-    width: 100%;
-  }
   #event-map .event-map-map {
-    display: none;
-  }
-  #event-map .event-map-topbar-text {
     display: none;
   }
 }
@@ -415,27 +472,22 @@ h3 {
 
 .event-map-sidebar.no-events .no-event-message {
   display: block;
-  padding: 1rem;
+  padding: var(--emap-list-vertical-padding) var(--emap-list-horizontal-padding);
 }
 
 </style>
 
 <div id="event-map">
-  <div class='event-map-topbar'>
-    <span class='event-map-topbar-text'>
-      Filter events:
-    </span>
-    <div class='event-search-bar'>
-      <input id='event-text-search' class='search' type='search' placeholder='zipcode, state, or event name'>
-      <div class='search-icon'>
+  <div class='event-map-sidebar' id='event-list-sidebar'>
+    <div class='event-map-sideheader'>
+      <div class='event-search-bar'>
+        <input id='event-text-search' class='input' type='search' placeholder='Filter by zipcode, city, state, or event name'>
       </div>
     </div>
-  </div>
-  <div class='event-map-sidebar' id='event-list-sidebar'>
-    <div class='no-event-message'>
-      <strong>No events found!</strong>
-    </div>
     <div id='listings' class='listings'>
+      <div class='no-event-message'>
+        <strong>No events found. Try another search!</strong>
+      </div>
     </div>
   </div>
   <div id='map' class='event-map-map'>
@@ -444,7 +496,6 @@ h3 {
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
 
 <script>
 if (typeof(String.prototype.trim) === "undefined") {
@@ -485,13 +536,41 @@ function haversineDistance(coords1, coords2, isMiles) {
 
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-function dateStr(d) {
+function parseDate(d) {
   const parts = d.split('T')[0].split('-');
   const year = parseInt(parts[0]);
   const month = parseInt(parts[1]);
   const day = parseInt(parts[2]);
-  const monthName = monthNames[month-1];
-  return `${monthName} ${day}, ${year}`;
+  return {
+    m: month,
+    d: day,
+    y: year,
+  }
+}
+
+function dateStr(d) {
+  const pd = parseDate(d);
+  const monthName = monthNames[pd.m-1];
+  return `${monthName} ${pd.d}, ${pd.year}`;
+}
+
+function dateRangeStr(d1, d2) {
+  if (!d2) {
+    return dateStr(d1);
+  }
+  const p1 = parseDate(d1);
+  const p2 = parseDate(d2);
+  const m1 = monthNames[p1.m-1];
+  const m2 = monthNames[p2.m-1];
+  if (p1.d == p2.d && p1.m == p2.m && p1.y == p2.y) {
+    return dateStr(d1);
+  } else if (p1.m == p2.m && p1.y == p2.y) {
+    return `${m1} ${p1.d} - ${p2.d}, ${p1.y}`;
+  } else if (p1.y == p2.y) {
+    return `${m1} ${p1.d} - ${m2} ${p2.d}, ${p1.y}`;
+  } else {
+    return `${dateStr(d1)} - ${dateStr(d2)}`;
+  }
 }
 
 function timeStr(d) {
@@ -549,9 +628,9 @@ function eventAddress(ev) {
     parts.push(htmlEscape(ev.location_name));
   }
 
-  if (ev.address) {
-    parts.push(htmlEscape(ev.address));
-  }
+  //if (ev.address) {
+  //  parts.push(htmlEscape(ev.address));
+  //}
 
   if (ev.city && ev.state && ev.zip_code) {
     parts.push(`${htmlEscape(ev.city)}, ${htmlEscape(ev.state)} ${htmlEscape(ev.zip_code)}`);
@@ -564,16 +643,7 @@ function eventAddress(ev) {
   return parts.join("<br>");
 }
 
-function truncate(str, len) {
-  if (str.length > len - 3) {
-    return str.slice(0, len - 3) + "...";
-  } else {
-    return str;
-  }
-}
-
 function eventCard(ev) {
-  debugger;
   return `<div class='event-card-header'>
     <a target='_blank' href='${linkEscape(ev.registration_link)}' class='event-card-header-rsvp event-button-secondary'>RSVP</a>
     <div class='event-card-header-title'>
@@ -582,17 +652,19 @@ function eventCard(ev) {
   </div>
   <div class='event-card-body'>
     <div class='event-card-body-date'>
-      ${dateStr(ev.start_date)}
-      ${ev.end_date ? ` - ${dateStr(ev.end_date)}` : ""}
-    </div>
-    <div class='event-card-body-time'>
-      ${ev.end_date ? "" : timeStr(ev.start_date)}
+      ${dateRangeStr(ev.start_date, ev.end_date)} at ${timeStr(ev.start_date)}
     </div>
     <div class='event-card-body-addr'>
       ${eventAddress(ev)}
     </div>
+    <div class='desc-toggle desc-toggle-open'>
+      More info <span class='caret caret-down'></span>
+    </div>
     <div class='event-card-body-desc'>
-      ${htmlEscape(truncate(ev.description, 280))}
+      <p>${htmlEscape(ev.description)}</p>
+      <div class='desc-toggle desc-toggle-close'>
+        Less info <span class='caret caret-up'></span>
+      </div>
     </div>
   </div>`;
 }
@@ -604,7 +676,7 @@ function eventTooltip(ev) {
     </div>
     <div class='event-tooltip-body'>
       <div class='event-tooltip-body-time'>
-        ${dateStr(ev.start_date)}, ${timeStr(ev.start_date)}
+        ${dateRangeStr(ev.start_date, ev.end_date)} at ${timeStr(ev.start_date)}
       </div>
       <div class='event-tooltip-body-rsvp'>
         <a class='event-button-secondary' target='_blank' href='${linkEscape(ev.registration_link)}'>RSVP</a>
@@ -630,7 +702,16 @@ $(document).ready(function() {
       url: "https://sunrise-events.s3.amazonaws.com/events.json",
       dataType: "json",
       success: function(data) {
-        initMap(data.map_data);
+        //initMap(data.map_data);
+        const md = [];
+        for (var i = 0; i < 10; i++) {
+         for (let ev of data.map_data) {
+          const e2 = JSON.parse(JSON.stringify(ev));
+           e2.event_title = `${e2.event_title} ${i+1}`;
+          md.push(e2);
+         }
+        }
+        initMap(md);
       }
    });
 });
@@ -652,14 +733,14 @@ function initMap(events) {
   var keys = [];
 
   for (var i = 0; i < events.length; i++) {
-    var t = events[i];
-    var key = `${t.latitude}, ${t.longitude}`;
+    var event = events[i];
+    var key = `${event.latitude}, ${event.longitude}`;
     if (!eventsByPos[key]) {
       eventsByPos[key] = {
         "type": "Feature",
         "geometry": {
           "type": "Point",
-          "coordinates": [t.longitude, t.latitude]
+          "coordinates": [event.longitude, event.latitude]
         },
         "properties": {
           "events": []
@@ -667,7 +748,8 @@ function initMap(events) {
       };
       keys.push(key);
     }
-    eventsByPos[key].properties.events.push(t);
+    event['index'] = i;
+    eventsByPos[key].properties.events.push(event);
   }
 
   function setQueryParam(name, value) {
@@ -684,11 +766,101 @@ function initMap(events) {
       var event = feature.properties.events[j];
       event['position'] = i;
       event['subindex'] = j;
-      feature.properties.searchKey += `position${i}_`;
+      feature.properties.searchKey += `e${event.index}_`;
     }
 
     features.push(feature);
   }
+
+  buildLocationList(features, events);
+
+  $('.desc-toggle').click((ev) => {
+    $(ev.currentTarget).closest('.event-card').toggleClass('desc-open');
+    return false;
+  });
+
+  function resetFilters() {
+    const params = new URLSearchParams(window.location.search);
+    const eventSearch = params.get('eventSearch');
+    $('#event-text-search').val(eventSearch);
+
+    if (eventSearch) {
+      $('#event-map').addClass('is-filtering');
+    } else {
+      $('#event-map').removeClass('is-filtering');
+    }
+
+    let minLat = 1000;
+    let maxLat = -1000;
+    let minLng = 1000;
+    let maxLng = -1000;
+
+    $('.event-card').addClass('is-filtered');
+    $('.marker').addClass('is-filtered');
+
+    const zipRegex = /\d{5}/g;
+    const zips = (eventSearch || '').match(zipRegex);
+    const zipCoords = [];
+    for (let zip of (zips || [])) {
+      const coords = (window.zipCodes || {})[zip];
+      if (coords) zipCoords.push(coords);
+    }
+
+    const searchRadius = (
+      params.get('searchRadius') ||
+      params.get('searchRadiusKm') ||
+      params.get('searchRadiusKM') ||
+      25
+    );
+
+    const remainingEvents = events.filter((ev) => {
+      // If there's no search, everything is displayed
+      if (!eventSearch) return true;
+
+      // If one of the specified fields is an exact text match, display it
+      for (let field of ['zip_code', 'event_title', 'city', 'state', 'location_name'])
+        if ((ev[field] || '').toLowerCase().includes(eventSearch.toLowerCase()))
+          return true;
+
+      // If the search text includes a zip code and we're within 25km, display it
+      for (let coord of zipCoords) {
+        const distance = haversineDistance(coord, [ev.latitude, ev.longitude]);
+        if (distance <= searchRadius) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    remainingEvents.forEach((ev) => {
+      $(`#listing-${ev.index}`).removeClass('is-filtered');
+      $(`.marker[data-events*='event${ev.index}_']`).removeClass('is-filtered');
+      minLat = Math.min(minLat, ev.latitude);
+      maxLat = Math.max(maxLat, ev.latitude);
+      minLng = Math.min(minLng, ev.longitude);
+      maxLng = Math.max(maxLng, ev.longitude);
+    });
+
+    if (remainingEvents.length) {
+      $("#event-list-sidebar").removeClass("no-events");
+    } else {
+      $("#event-list-sidebar").addClass("no-events");
+    }
+
+    const bounds = [[minLng, minLat], [maxLng, maxLat]];
+
+    map.fitBounds(bounds, {
+      padding: 75,
+      linear: true,
+      maxZoom: 7
+    });
+  }
+
+  $('#event-text-search').on('input change', (jsEv) => {
+    setQueryParam('eventSearch', $(jsEv.currentTarget).val());
+    resetFilters();
+  });
 
   map.on('load', function (e) {
     map.addSource("places", {
@@ -697,96 +869,6 @@ function initMap(events) {
         "type": "FeatureCollection",
         "features": features
        }
-    });
-
-    buildLocationList(features, events);
-
-    var eventList = new List('event-list-sidebar', {
-      listClass: 'listings',
-      valueNames: ['event-name']
-    });
-
-    function resetFilters() {
-      const params = new URLSearchParams(window.location.search);
-      const eventSearch = params.get('eventSearch');
-      $('#event-text-search').val(eventSearch);
-
-      if (eventSearch) {
-        $('#event-map').addClass('is-filtering');
-      } else {
-        $('#event-map').removeClass('is-filtering');
-      }
-
-      let minLat = 1000;
-      let maxLat = -1000;
-      let minLng = 1000;
-      let maxLng = -1000;
-
-      $('.event-card').addClass('is-filtered');
-      $('.marker').addClass('is-filtered');
-
-      const zipRegex = /\d{5}/g;
-      const zips = eventSearch.match(zipRegex);
-      const zipCoords = [];
-      for (let zip of (zips || [])) {
-        const coords = (window.zipCodes || {})[zip];
-        if (coords) zipCoords.push(coords);
-      }
-
-      const searchRadius = (
-        params.get('searchRadius') ||
-        params.get('searchRadiusKm') ||
-        params.get('searchRadiusKM') ||
-        25
-      );
-
-      const remainingEvents = events.filter((ev) => {
-        // If there's no search, everything is displayed
-        if (!eventSearch) return true;
-
-        // If one of the specified fields is an exact text match, display it
-        for (let field of ['zip_code', 'event_title', 'state'])
-          if (ev[field].toLowerCase().search(eventSearch.toLowerCase()) >= 0)
-            return true;
-
-        // If the search text includes a zip code and we're within 25km, display it
-        for (let coord of zipCoords) {
-          const distance = haversineDistance(coord, [ev.latitude, ev.longitude]);
-          if (distance <= searchRadius) {
-            return true;
-          }
-        }
-
-        return false;
-      });
-
-      remainingEvents.forEach((ev) => {
-        $(`#listing-${ev.position}`).removeClass('is-filtered');
-        $(`#marker-${ev.position}`).removeClass('is-filtered');
-        minLat = Math.min(minLat, ev.latitude);
-        maxLat = Math.max(maxLat, ev.latitude);
-        minLng = Math.min(minLng, ev.longitude);
-        maxLng = Math.max(maxLng, ev.longitude);
-      });
-
-      if (remainingEvents.length) {
-        $("#event-list-sidebar").removeClass("no-events");
-      } else {
-        $("#event-list-sidebar").addClass("no-events");
-      }
-
-      const bounds = [[minLng, minLat], [maxLng, maxLat]];
-
-      map.fitBounds(bounds, {
-        padding: 75,
-        linear: true,
-        maxZoom: 7
-      });
-    }
-
-    $('#event-text-search').on('input change', (jsEv) => {
-      setQueryParam('eventSearch', $(jsEv.currentTarget).val());
-      resetFilters();
     });
 
     resetFilters();
@@ -806,6 +888,7 @@ function initMap(events) {
     var el = document.createElement('div');
     el.id = "marker-" + i;
     el.className = 'marker';
+    el.setAttribute('data-search', marker.properties.searchKey);
     // Add markers to the map at all points
     new mapboxgl.Marker(el, {offset: [0, -23]})
         .setLngLat(marker.geometry.coordinates)
@@ -821,7 +904,8 @@ function initMap(events) {
         // 3. Highlight listing in sidebar (and remove highlight for all other listings)
         e.stopPropagation();
         $('#event-map .active').removeClass('active');
-        var link = $('.listing-for-feature-'+ i);
+
+        var link = $(`#listing-${marker.properties.events[0].index}`);
         if (link.length) {
           $(link[0]).addClass('active');
           link[0].scrollIntoView({ block: 'nearest', inline: 'start' });
@@ -846,7 +930,7 @@ function initMap(events) {
     popupHtml += '</div>';
 
     var popup = new mapboxgl.Popup({ closeOnClick: true, anchor: "left" })
-      .on('close', function() { $('#event-map .item').removeClass('active'); })
+      .on('close', function() { $('#event-map .event-card').removeClass('active'); })
       .setLngLat(currentFeature.geometry.coordinates)
       .setHTML(popupHtml)
       .addTo(map);
@@ -857,8 +941,8 @@ function initMap(events) {
       var t = events[i];
       var listings = document.getElementById('listings');
       var listing = listings.appendChild(document.createElement('div'));
-      listing.id = "listing-" + i;
-      listing.className = "event-card item listing-for-feature-" + t.position;
+      listing.id = "listing-" + t.index;
+      listing.className = "event-card";
       listing.innerHTML = eventCard(t);
       listing.dataPosition = t.position;
       listing.dataSubindex = t.subindex;
@@ -879,7 +963,7 @@ function initMap(events) {
         $(this).addClass('active');
 
         // 4. scroll to entry if it's not visible
-        var sublisting = $(`.events-sublist .event-info-${j}`);
+        var sublisting = $(`.events-sublist .event-tooltip:nth-child(${j+1})`);
         if (j > 0 && sublisting.length) {
           sublisting[0].scrollIntoView({block: "nearest", inline: "start"});
         }
