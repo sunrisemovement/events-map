@@ -411,7 +411,7 @@ h3 {
   font-weight: 300;
   font-size: var(--emap-small-font);
   line-height: 22px;
-  min-width: 200px;
+  min-width: 230px;
   border-radius: 10px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
   max-height: 400px;
@@ -421,9 +421,10 @@ h3 {
 }
 
 #event-map .event-tooltip-header {
-  font-size: var(--emap-large-font);
+  font-size: calc(var(--emap-large-font) - 6px);
   font-weight: bold;
 }
+
 #event-map .event-tooltip + .event-tooltip {
   margin-top: 1rem;
 }
@@ -436,6 +437,8 @@ h3 {
 #event-map .event-tooltip-body-time {
   font-size: 15px;
   font-weight: 600;
+  margin-top: 3px;
+  margin-bottom: 7px;
 }
 
 #event-map .mapboxgl-popup-content:after {
@@ -702,16 +705,21 @@ $(document).ready(function() {
       url: "https://sunrise-events.s3.amazonaws.com/events.json",
       dataType: "json",
       success: function(data) {
-        //initMap(data.map_data);
+        initMap(data.map_data);
+
+        /*
         const md = [];
         for (var i = 0; i < 10; i++) {
          for (let ev of data.map_data) {
           const e2 = JSON.parse(JSON.stringify(ev));
            e2.event_title = `${e2.event_title} ${i+1}`;
+           e2.latitude += i * 10 * Math.random();
+           e2.longitude += i * 10 * Math.random();
           md.push(e2);
          }
         }
         initMap(md);
+        */
       }
    });
 });
@@ -751,6 +759,18 @@ function initMap(events) {
     event['index'] = i;
     eventsByPos[key].properties.events.push(event);
   }
+
+  map.on('load', function (e) {
+    map.addSource("places", {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": features
+       }
+    });
+
+    resetFilters();
+  });
 
   function setQueryParam(name, value) {
     const params = new URLSearchParams(window.location.search);
@@ -800,8 +820,6 @@ function initMap(events) {
 
     const zipRegex = /\d{5}/g;
     const zips = eventSearch.match(zipRegex) || [];
-    console.log("Initial zips");
-    console.log(zips);
 
     if (!zips.length && (eventSearch.match(/\d{4}/g) || []).length) {
       for (let prefix of eventSearch.match(/\d{4}/g) || []) {
@@ -810,8 +828,6 @@ function initMap(events) {
         }
       }
     }
-    console.log("Zips with length-4 prefixes");
-    console.log(zips);
 
     if (!zips.length && (eventSearch.match(/\d{3}/g) || []).length) {
       for (let prefix of eventSearch.match(/\d{3}/g) || []) {
@@ -820,8 +836,6 @@ function initMap(events) {
         }
       }
     }
-    console.log("Zips with length-3 prefixes");
-    console.log(zips);
 
     const zipCoords = [];
     for (let zip of zips) {
@@ -858,7 +872,7 @@ function initMap(events) {
 
     remainingEvents.forEach((ev) => {
       $(`#listing-${ev.index}`).removeClass('is-filtered');
-      $(`.marker[data-events*='event${ev.index}_']`).removeClass('is-filtered');
+      $(`.marker[data-search*='e${ev.index}_']`).removeClass('is-filtered');
       minLat = Math.min(minLat, ev.latitude);
       maxLat = Math.max(maxLat, ev.latitude);
       minLng = Math.min(minLng, ev.longitude);
@@ -882,18 +896,6 @@ function initMap(events) {
 
   $('#event-text-search').on('input change', (jsEv) => {
     setQueryParam('eventSearch', $(jsEv.currentTarget).val());
-    resetFilters();
-  });
-
-  map.on('load', function (e) {
-    map.addSource("places", {
-      "type": "geojson",
-      "data": {
-        "type": "FeatureCollection",
-        "features": features
-       }
-    });
-
     resetFilters();
   });
 
@@ -931,7 +933,7 @@ function initMap(events) {
         var link = $(`#listing-${marker.properties.events[0].index}`);
         if (link.length) {
           $(link[0]).addClass('active');
-          link[0].scrollIntoView({ block: 'nearest', inline: 'start' });
+          link[0].scrollIntoView({ block: 'center', inline: 'start' });
         }
     });
   });
@@ -978,6 +980,8 @@ function initMap(events) {
         // 1. Fly to the point
         flyToStore(clickedListing);
 
+        return;
+
         // 2. Close all other popups and display popup for clicked store
         createPopUp(clickedListing);
 
@@ -993,6 +997,8 @@ function initMap(events) {
       });
     }
   }
+
+  return;
 }
 </script>
 
