@@ -818,19 +818,22 @@ function initMap(events) {
     $('.event-card').addClass('is-filtered');
     $('.marker').addClass('is-filtered');
 
-    const zipRegex = /\d{5}/g;
-    const zips = eventSearch.match(zipRegex) || [];
-
-    if (!zips.length && (eventSearch.match(/\d{4}/g) || []).length) {
-      for (let prefix of eventSearch.match(/\d{4}/g) || []) {
+    const zips = [];
+    const zip5 = (eventSearch.match(/\d{5}/g) || [])
+    const zip4 = (eventSearch.match(/\d{4}/g) || [])
+    const zip3 = (eventSearch.match(/\d{3}/g) || [])
+    if (zip5.length) {
+      for (let code of zip5) {
+        zips.push(code);
+      }
+    } else if (zip4.length) {
+      for (let prefix of zip4) {
         for (let code of zipPrefixes[prefix] || []) {
           zips.push(code);
         }
       }
-    }
-
-    if (!zips.length && (eventSearch.match(/\d{3}/g) || []).length) {
-      for (let prefix of eventSearch.match(/\d{3}/g) || []) {
+    } else if (zip3.length) {
+      for (let prefix of zip3) {
         for (let code of zipPrefixes[prefix] || []) {
           zips.push(code);
         }
