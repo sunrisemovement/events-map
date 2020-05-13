@@ -557,7 +557,7 @@ transform: scale(0.9);
 
 const sidebar = document.getElementById('event-list-sidebar');
 const searchwrap = document.getElementById('event-search-wrapper');
-const threshold = searchwrap.offsetTop;
+const threshold = searchwrap.offsetTop - 17;
 
 sidebar.addEventListener("scroll", () => {
   if (sidebar.scrollTop > threshold) {
