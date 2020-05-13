@@ -251,7 +251,7 @@ h3 {
   font-family: 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
   background-color: var(--emap-white);
   border: 1px solid var(--emap-white);
-  padding-top: 103px;
+  //padding-top: 103px;
 }
 
 #event-map ::-webkit-scrollbar {
@@ -389,7 +389,7 @@ h3 {
   background: var(--emap-yellow);
   padding: var(--emap-list-vertical-padding) var(--emap-list-horizontal-padding);
   width: calc(var(--emap-width) - 2*var(--emap-list-horizontal-padding));
-  position: fixed;
+  //position: fixed;
   z-index: 1;
 }
 
@@ -421,7 +421,7 @@ h3 {
 }
 
 #event-map .event-tooltip-header {
-  font-size: calc(var(--emap-large-font) - 6px);
+  font-size: calc(var(--emap-large-font));
   font-weight: bold;
 }
 
@@ -460,6 +460,19 @@ h3 {
   border-bottom-color: #fdde33;
 }
 
+#event-map .sticky #event-search-wrapper {
+  position: fixed;
+  top: 0;
+  padding: 2rem;
+  background: var(--emap-yellow);
+  left: 0;
+  width: calc(var(--emap-width) - 4rem);
+  z-index: 1;
+}
+#event-map .sticky #listings {
+  padding-top: calc(2rem + 7px);
+}
+
 @media (max-width: 480px) {
   #event-map .event-map-sidebar {
     width: 100%;
@@ -467,18 +480,49 @@ h3 {
   #event-map .event-map-sideheader {
     width: calc(100% - 4rem);
   }
+  #event-map .sticky #event-search-wrapper {
+    width: calc(100% - 4rem);
+  }
   #event-map .event-map-map {
     display: none;
   }
 }
 
-.no-event-message {
+@media (max-width: 360px) {
+  #event-map .sunrise-logo-movement {
+    display: none;
+  }
+}
+
+#event-map .no-event-message {
   display: none;
 }
 
-.event-map-sidebar.no-events .no-event-message {
+#event-map .event-map-sidebar.no-events .no-event-message {
   display: block;
   padding: var(--emap-list-vertical-padding) var(--emap-list-horizontal-padding);
+}
+
+#event-map .event-map-sideheader .sunrise-logo {
+  font-family: 'Source Sans Pro',sans-serif;
+  font-weight: bold;
+  font-size: 20px;
+  vertical-align: top;
+  display: inline-block;
+  margin-left: 3px;
+}
+#event-map .event-map-sideheader .sunrise-icon {
+  background-image: url("data:image/svg+xml,%3Csvg width='19' height='30' viewBox='0 0 19 30' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0V0.0718592V6.38588V20.7948L9.26471 29.9988L18.5294 20.7948V6.38708V0.0718592V0H0ZM14.8488 4.9499C14.6728 3.59176 14.005 2.38333 13.0285 1.51024H17.0827V4.9499H14.8488ZM17.0827 17.7911L11.8205 8.63987L17.0827 12.8724V17.7911ZM1.44667 12.834L6.75233 8.60154L1.44667 17.7995V12.834ZM8.57272 8.33806L8.55102 27.2586L1.62509 20.3781L8.57272 8.33806ZM10.0194 8.40393L16.9043 20.3781L9.99889 27.2382L10.0194 8.40393ZM5.1417 4.9499C5.48528 2.99772 7.2032 1.51024 9.26471 1.51024C11.3262 1.51024 13.0441 2.99892 13.3877 4.9499H5.1417ZM1.44667 4.9499V1.50904H5.50096C4.52446 2.38213 3.85658 3.59056 3.68057 4.9487H1.44667V4.9499ZM3.63234 6.38708H7.22008L1.44667 10.9909V6.38708H3.63234ZM17.0827 11.022L11.319 6.38708H14.8983H17.084V11.022H17.0827Z' fill='%2333342E'/%3E%3C/svg%3E%0A");
+  width: 19px;
+height: 30px;
+display: inline-block;
+transform: scale(0.9);
+}
+
+#event-map .event-map-sideheader p {
+  font-size: 13px;
+  font-family: 'Source Serif Pro', serif;
+  line-height: 19px;
 }
 
 </style>
@@ -487,7 +531,13 @@ h3 {
   <div class='event-map-sidebar' id='event-list-sidebar'>
     <div class='event-map-sideheader'>
       <div class='event-search-bar'>
-        <input id='event-text-search' class='input' type='search' placeholder='Filter by zip, city, state, or name'>
+        <span class='sunrise-icon'></span>
+        <div class='sunrise-logo'>SUNRISE <span class='sunrise-logo-movement'>MOVEMENT</span> EVENTS</div>
+
+        <p>Use the searchbar below to find trainings, rallies, canvasses, and other events!</p>
+        <div id='event-search-wrapper'>
+          <input id='event-text-search' class='input' type='search' placeholder='Filter by zip, city, state, or name'>
+        </div>
       </div>
     </div>
     <div id='listings' class='listings'>
@@ -504,6 +554,19 @@ h3 {
 <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
 
 <script>
+
+const sidebar = document.getElementById('event-list-sidebar');
+const searchwrap = document.getElementById('event-search-wrapper');
+const threshold = searchwrap.offsetTop;
+
+sidebar.addEventListener("scroll", () => {
+  if (sidebar.scrollTop > threshold) {
+    sidebar.classList.add("sticky");
+  } else {
+    sidebar.classList.remove("sticky");
+  }
+});
+
 if (typeof(String.prototype.trim) === "undefined") {
   String.prototype.trim = function() {
     return String(this).replace(/^\s+|\s+$/g, '');
