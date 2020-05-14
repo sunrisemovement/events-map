@@ -620,7 +620,7 @@ function parseDate(d) {
 function dateStr(d) {
   const pd = parseDate(d);
   const monthName = monthNames[pd.m-1];
-  return `${monthName} ${pd.d}, ${pd.year}`;
+  return `${monthName} ${pd.d}, ${pd.y}`;
 }
 
 function dateRangeStr(d1, d2) {
