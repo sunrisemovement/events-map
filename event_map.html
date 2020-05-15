@@ -774,6 +774,10 @@ function geoJSONFeature(t) {
   }
 }
 
+function sample(array) {
+  return array[Math.floor(Math.random()*array.length)];
+}
+
 $(document).ready(function() {
   $.ajax({
       type: "GET",
@@ -783,13 +787,15 @@ $(document).ready(function() {
         initMap(data.map_data);
 
         /*
+        const w1 = ['Apples', 'Oranges', 'Bananas'];
+        const w2 = ['Red', 'Green', 'Blue'];
         const md = [];
         for (var i = 0; i < 10; i++) {
          for (let ev of data.map_data) {
           const e2 = JSON.parse(JSON.stringify(ev));
-           e2.event_title = `${e2.event_title} ${i+1}`;
-           e2.latitude += i * 10 * Math.random();
-           e2.longitude += i * 10 * Math.random();
+           e2.event_title = `${e2.event_title} ${sample(w1)} ${sample(w2)} ${i+1}`;
+           e2.latitude += 10 * Math.random();
+           e2.longitude += 10 * Math.random();
           md.push(e2);
          }
         }
