@@ -51,10 +51,6 @@ class MobilizeAmericaEvent
     timeslots.reject(&:finished?).sort_by(&:start_date).first
   end
 
-  def event_type
-    data['event_type']
-  end
-
   def tz
     TZInfo::Timezone.get(data['timezone']) rescue nil
   end
@@ -77,7 +73,8 @@ class MobilizeAmericaEvent
       state: location['region'],
       address: location['address_lines'].select{|l| l.size > 0}.join("\n"),
       zip_code: location['postal_code'],
-      event_type: 'MobilizeAmerica Event',#event_type,
+      event_source: 'MobilizeAmerica',
+      event_type: data['event_type'],
       event_title: data['title'],
       description: data['description'],
       location_name: location['venue'],
