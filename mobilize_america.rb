@@ -71,7 +71,7 @@ class MobilizeAmericaEvent
     {
       city: location['locality'],
       state: location['region'],
-      address: location['address_lines'].select{|l| l.size > 0}.join("\n"),
+      address: (location['address_lines'] || []).select{|l| l.size > 0}.join("\n"),
       zip_code: location['postal_code'],
       event_source: 'MobilizeAmerica',
       event_type: data['event_type'],
@@ -87,15 +87,15 @@ class MobilizeAmericaEvent
   end
 
   def location
-    data['location']
+    data['location'] || {}
   end
 
   def latitude
-    location['location']['latitude']
+    (location['location'] || {})['latitude']
   end
 
   def longitude
-    location['location']['longitude']
+    (location['location'] || {})['longitude']
   end
 end
 
