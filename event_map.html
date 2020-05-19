@@ -823,6 +823,9 @@ function initMap(events) {
 
   for (var i = 0; i < events.length; i++) {
     var event = events[i];
+    if (event.latitude === null) {
+      continue;
+    }
     var key = `${event.latitude}, ${event.longitude}`;
     if (!eventsByPos[key]) {
       eventsByPos[key] = {
@@ -841,6 +844,20 @@ function initMap(events) {
     eventsByPos[key].properties.events.push(event);
   }
 
+  var features = [];
+  for (var i = 0; i < keys.length; i++) {
+    var feature = eventsByPos[keys[i]];
+    feature.properties.searchKey = '';
+    for (var j = 0; j < feature.properties.events.length; j++) {
+      var event = feature.properties.events[j];
+      event['position'] = i;
+      event['subindex'] = j;
+      feature.properties.searchKey += `e${event.index}_`;
+    }
+
+    features.push(feature);
+  }
+
   map.on('load', function (e) {
     map.addSource("places", {
       "type": "geojson",
@@ -857,20 +874,6 @@ function initMap(events) {
     const params = new URLSearchParams(window.location.search);
     params.set(name, value);
     window.history.replaceState({}, "", decodeURIComponent(`${window.location.pathname}?${params}`));
-  }
-
-  var features = [];
-  for (var i = 0; i < keys.length; i++) {
-    var feature = eventsByPos[keys[i]];
-    feature.properties.searchKey = '';
-    for (var j = 0; j < feature.properties.events.length; j++) {
-      var event = feature.properties.events[j];
-      event['position'] = i;
-      event['subindex'] = j;
-      feature.properties.searchKey += `e${event.index}_`;
-    }
-
-    features.push(feature);
   }
 
   buildLocationList(features, events);
@@ -957,10 +960,12 @@ function initMap(events) {
     remainingEvents.forEach((ev) => {
       $(`#listing-${ev.index}`).removeClass('is-filtered');
       $(`.marker[data-search*='e${ev.index}_']`).removeClass('is-filtered');
-      minLat = Math.min(minLat, ev.latitude);
-      maxLat = Math.max(maxLat, ev.latitude);
-      minLng = Math.min(minLng, ev.longitude);
-      maxLng = Math.max(maxLng, ev.longitude);
+      if (ev.latitude !== null) {
+        minLat = Math.min(minLat, ev.latitude);
+        maxLat = Math.max(maxLat, ev.latitude);
+        minLng = Math.min(minLng, ev.longitude);
+        maxLng = Math.max(maxLng, ev.longitude);
+      }
     });
 
     if (remainingEvents.length) {
@@ -1023,7 +1028,9 @@ function initMap(events) {
   });
 
   function flyToStore(currentFeature) {
-    map.flyTo({ center: currentFeature.geometry.coordinates });
+    if (currentFeature) {
+      map.flyTo({ center: currentFeature.geometry.coordinates });
+    }
   }
 
   function createPopUp(currentFeature) {
