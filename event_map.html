@@ -885,7 +885,7 @@ function initMap(events) {
 
   function resetFilters() {
     const params = new URLSearchParams(window.location.search);
-    const eventSearch = params.get('eventSearch') || '';
+    const eventSearch = params.get('filter') || '';
     $('#event-text-search').val(eventSearch);
 
     if (eventSearch) {
@@ -931,9 +931,9 @@ function initMap(events) {
     }
 
     const searchRadius = (
-      params.get('searchRadius') ||
-      params.get('searchRadiusKm') ||
-      params.get('searchRadiusKM') ||
+      params.get('radius') ||
+      params.get('radiusKm') ||
+      params.get('radiusKM') ||
       25
     );
 
@@ -984,7 +984,7 @@ function initMap(events) {
   }
 
   $('#event-text-search').on('input change', (jsEv) => {
-    setQueryParam('eventSearch', $(jsEv.currentTarget).val());
+    setQueryParam('filter', $(jsEv.currentTarget).val());
     resetFilters();
   });
 
