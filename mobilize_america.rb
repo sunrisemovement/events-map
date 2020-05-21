@@ -1,12 +1,6 @@
 require 'httparty'
-require 'dotenv'
 require 'tzinfo'
 require 'pry'
-
-Dotenv.load
-
-MA_SUNRISE_ID = ENV['MOBILIZE_AMERICA_ORG_ID']
-MA_SUNRISE_KEY = ENV['MOBILIZE_AMERICA_API_KEY']
 
 class Timeslot
   attr_reader :data
@@ -103,19 +97,21 @@ class MobilizeAmericaRequest
   include HTTParty
   base_uri 'https://api.mobilize.us'
 
-  def initialize(page)
+  def initialize(api_key, org_id, page)
     @options = {
       query: {
         page: page
       },
       headers: {
-        'Authorization' => "Bearer #{MA_SUNRISE_KEY}"
+        'Authorization' => "Bearer #{api_key}"
       }
     }
+
+    @events_url = "/v1/organizations/#{org_id}/events"
   end
 
   def response
-    @response ||= self.class.get("/v1/organizations/#{MA_SUNRISE_ID}/events", @options)
+    @response ||= self.class.get(@events_url, @options)
   end
 
   def last_page?
@@ -128,17 +124,22 @@ class MobilizeAmericaRequest
 end
 
 class MobilizeAmerica
-  def self.events(max_pages=100)
+  def initialize(api_key, org_id)
+    @api_key = api_key
+    @org_id = org_id
+  end
+
+  def events(max_pages=100)
     results = []
     max_pages.times do |page|
-      req = MobilizeAmericaRequest.new(page+1)
+      req = MobilizeAmericaRequest.new(@api_key, @org_id, page+1)
       results += req.results
       break if req.last_page?
     end
     results.select(&:should_appear?)
   end
 
-  def self.map_entries
-    self.events.map(&:map_entry)
+  def map_entries
+    events.map(&:map_entry)
   end
 end
