@@ -41,8 +41,12 @@ class MobilizeAmericaEvent
     data['timeslots'].map { |slot| Timeslot.new(slot) }
   end
 
-  def next_timeslot
+  def first_timeslot
     timeslots.reject(&:finished?).sort_by(&:start_date).first
+  end
+
+  def last_timeslot
+    timeslots.reject(&:finished?).sort_by(&:end_date).last
   end
 
   def tz
@@ -50,14 +54,14 @@ class MobilizeAmericaEvent
   end
 
   def start_date
-    if tz && slot = next_timeslot
+    if tz && slot = first_timeslot
       tz.to_local(slot.start_date).strftime('%FT%T%:z')
     end
   end
 
   def end_date
-    if tz && slot = next_timeslot
-      tz.to_local(slot.end_date).strftime('%FT%T%:z') rescue nil
+    if tz && slot = last_timeslot
+      tz.to_local(slot.end_date).strftime('%FT%T%:z') rescue tz.to_local(slot.start_date).strftime('%FT%T%:z')
     end
   end
 
