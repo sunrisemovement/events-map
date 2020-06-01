@@ -823,6 +823,7 @@ function initMap(events) {
 
   for (var i = 0; i < events.length; i++) {
     var event = events[i];
+    event['index'] = i;
     if (event.latitude === null) {
       continue;
     }
@@ -840,7 +841,6 @@ function initMap(events) {
       };
       keys.push(key);
     }
-    event['index'] = i;
     eventsByPos[key].properties.events.push(event);
   }
 
