@@ -59,7 +59,7 @@ entries = entries.each_with_object([]) do |entry, list|
   end
 end
 
-entries.sort_by! { |e| [e[:start_date], e[:city]] }
+entries.sort_by! { |e| [e[:start_date], e[:city] || e[:location_name] || 'zzz'] }
 
 map_json = JSON.dump({
   updated_at: Time.now.to_s,
