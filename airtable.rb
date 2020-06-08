@@ -7,12 +7,15 @@ require 'json'
 Dotenv.load
 Airrecord.api_key = ENV['AIRTABLE_API_KEY']
 
+# Safely try to transform a data string into a standard format
 def date_parse(d)
   Date.parse(d).to_s
 rescue
   nil
 end
 
+# Use mapbox to generate latitudes and longitudes for Airtable events that
+# are missing them.
 def query_mapbox(loc)
   resp = JSON.parse(`curl https://api.mapbox.com/geocoding/v5/mapbox.places/#{URI.encode(loc)}.json?access_token=#{ENV['MAPBOX_API_KEY']}`)
   resp['features'].first
@@ -21,8 +24,60 @@ end
 class EventTypeDictionary < Airrecord::Table
   self.base_key = ENV['AIRTABLE_APP_KEY']
   self.table_name = 'Event Type Dictionary'
+
+  def self.mapping
+    # Construct a hash of (source event type => user-friendly name) using
+    # the data provided in the Event Map and Management Airtable
+    dict = Hash.new { |h,k| h[k] = {} }
+
+    all.each do |d|
+      src_et = d["source_event_type"].to_s.strip.downcase
+      [src_et, src_et.gsub(/\s+/, '_')].each do |et|
+        if d["exclude_from_map"].to_s == "1"
+          dict[d["Source"]][et] = false
+        else
+          dict[d["Source"]][et] = d["map_event_type"]
+        end
+      end
+    end
+
+    dict
+  end
+
+  def self.transform(entries)
+    # Transform event entries using the above mapping -- importantly,
+    # using that data to skip events with types we want to keep private.
+    dict = self.mapping
+    entries.each_with_object([]) do |entry, list|
+      src = entry[:event_source]
+
+      if src == 'Airtable'
+        # Airtable events that have made it this far are always included
+        # and have the right event type
+        list << entry
+        next
+      end
+
+      src_et = entry[:event_type]
+      map_et = dict[src][src_et.to_s.strip.downcase]
+      if map_et === false
+        # This event type has specifically been excluded from the map
+        puts "Skipping specifically-excluded #{src_et} event type #{src_et.inspect}"
+        next
+      elsif map_et.nil?
+        # This event type is unrecognized; warn but keep it
+        puts "Unmapped #{src_et} event type #{src_et.inspect}"
+        list << entry
+      else
+        # This event type has been successfully mapped! :D
+        entry[:event_type] = map_et
+        list << entry
+      end
+    end
+  end
 end
 
+# Wrapper class for Airtable events
 class Airtable < Airrecord::Table
   self.base_key = ENV['AIRTABLE_APP_KEY']
   self.table_name = 'Events'
@@ -49,6 +104,7 @@ class Airtable < Airrecord::Table
   end
 
   def computed_lat_lng
+    # Query mapbox using the helper function at the top of this file
     return nil, nil unless self['zip_code']
     loc_full = "#{self['address']} #{self['zip_code']} #{self['city']}, #{self['state']}"
     loc_part = "#{self['zip_code']} #{self['city']}, #{self['state']}"
@@ -60,6 +116,9 @@ class Airtable < Airrecord::Table
   end
 
   def populate_lat_lng!
+    # Use the queried data to populate latitude and longitude, and save it
+    # so we don't have to query mapbox again (and so that it can be
+    # manually updated if necessary)
     raise if has_lat_lng?
     return unless ENV['MAPBOX_API_KEY']
     lat, lng = computed_lat_lng
