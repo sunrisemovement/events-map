@@ -26,8 +26,41 @@ class Timeslot
   end
 end
 
+def equal_emails?(a, b)
+  return false unless a.to_s =~ URI::MailTo::EMAIL_REGEXP
+  return false unless b.to_s =~ URI::MailTo::EMAIL_REGEXP
+  a1 = a.split('@').first
+  a2 = a.split('@').last
+  b1 = b.split('@').first
+  b2 = b.split('@').last
+  return false unless a2.downcase == b2.downcase
+  return false unless a1.gsub('.','').downcase == b1.gsub('.','').downcase
+  true
+end
+
 class MobilizeAmericaEvent
   attr_reader :data
+
+  def self.hubs
+    @hubs ||= JSON.parse(HTTParty.get(ENV['HUB_JSON_URL']))['map_data'] rescue []
+  end
+
+  def contact
+    data['contact'] || {}
+  end
+
+  def hub_name
+    if hub = self.class.hubs.detect{|h| equal_emails?(h['email'], contact['email_address']) }
+      puts hub['name']
+      hub['name']
+    elsif hub = self.class.hubs.detect{|h| h['name'] == contact['name'] }
+      puts hub['name']
+      hub['name']
+    else
+      puts data
+      puts
+    end
+  end
 
   def initialize(data)
     @data = data
@@ -80,7 +113,8 @@ class MobilizeAmericaEvent
       start_date: start_date,
       end_date: end_date,
       latitude: latitude,
-      longitude: longitude
+      longitude: longitude,
+      hub_name: hub_name
     }
   end
 
