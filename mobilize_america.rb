@@ -1,8 +1,8 @@
 require 'httparty'
 require 'tzinfo'
-require 'pry'
+require_relative 'event'
 
-class Timeslot
+class MobilizeAmericaTimeslot
   attr_reader :data
 
   def initialize(data)
@@ -39,28 +39,9 @@ def equal_emails?(a, b)
 end
 
 class MobilizeAmericaEvent
+  include Event
+
   attr_reader :data
-
-  def self.hubs
-    @hubs ||= JSON.parse(HTTParty.get(ENV['HUB_JSON_URL']))['map_data'] rescue []
-  end
-
-  def contact
-    data['contact'] || {}
-  end
-
-  def hub_name
-    if hub = self.class.hubs.detect{|h| equal_emails?(h['email'], contact['email_address']) }
-      puts hub['name']
-      hub['name']
-    elsif hub = self.class.hubs.detect{|h| h['name'] == contact['name'] }
-      puts hub['name']
-      hub['name']
-    else
-      puts data
-      puts
-    end
-  end
 
   def initialize(data)
     @data = data
@@ -71,7 +52,7 @@ class MobilizeAmericaEvent
   end
 
   def timeslots
-    data['timeslots'].map { |slot| Timeslot.new(slot) }
+    data['timeslots'].map { |slot| MobilizeAmericaTimeslot.new(slot) }
   end
 
   def first_timeslot
@@ -114,7 +95,7 @@ class MobilizeAmericaEvent
       end_date: end_date,
       latitude: latitude,
       longitude: longitude,
-      hub_name: hub_name
+      hub_id: hub_id
     }
   end
 
@@ -128,6 +109,18 @@ class MobilizeAmericaEvent
 
   def longitude
     (location['location'] || {})['longitude']
+  end
+
+  def contact
+    data['contact'] || {}
+  end
+
+  def contact_email
+    contact['email_address']
+  end
+
+  def contact_name
+    contact['name']
   end
 end
 
@@ -161,7 +154,7 @@ class MobilizeAmericaRequest
   end
 end
 
-class MobilizeAmerica
+class MobilizeAmericaClient
   def initialize(api_key, org_id)
     @api_key = api_key
     @org_id = org_id
@@ -177,7 +170,7 @@ class MobilizeAmerica
     results.select(&:should_appear?)
   end
 
-  def map_entries
+  def event_map_entries
     events.map(&:map_entry)
   end
 end
