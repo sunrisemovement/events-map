@@ -26,18 +26,6 @@ class MobilizeAmericaTimeslot
   end
 end
 
-def equal_emails?(a, b)
-  return false unless a.to_s =~ URI::MailTo::EMAIL_REGEXP
-  return false unless b.to_s =~ URI::MailTo::EMAIL_REGEXP
-  a1 = a.split('@').first
-  a2 = a.split('@').last
-  b1 = b.split('@').first
-  b2 = b.split('@').last
-  return false unless a2.downcase == b2.downcase
-  return false unless a1.gsub('.','').downcase == b1.gsub('.','').downcase
-  true
-end
-
 class MobilizeAmericaEvent
   include Event
 
