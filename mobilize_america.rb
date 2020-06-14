@@ -1,8 +1,8 @@
 require 'httparty'
 require 'tzinfo'
-require 'pry'
+require_relative 'event'
 
-class Timeslot
+class MobilizeAmericaTimeslot
   attr_reader :data
 
   def initialize(data)
@@ -27,6 +27,8 @@ class Timeslot
 end
 
 class MobilizeAmericaEvent
+  include Event
+
   attr_reader :data
 
   def initialize(data)
@@ -38,7 +40,7 @@ class MobilizeAmericaEvent
   end
 
   def timeslots
-    data['timeslots'].map { |slot| Timeslot.new(slot) }
+    data['timeslots'].map { |slot| MobilizeAmericaTimeslot.new(slot) }
   end
 
   def first_timeslot
@@ -80,7 +82,8 @@ class MobilizeAmericaEvent
       start_date: start_date,
       end_date: end_date,
       latitude: latitude,
-      longitude: longitude
+      longitude: longitude,
+      hub_id: hub_id
     }
   end
 
@@ -94,6 +97,18 @@ class MobilizeAmericaEvent
 
   def longitude
     (location['location'] || {})['longitude']
+  end
+
+  def contact
+    data['contact'] || {}
+  end
+
+  def contact_email
+    contact['email_address']
+  end
+
+  def contact_name
+    contact['name']
   end
 end
 
@@ -127,7 +142,7 @@ class MobilizeAmericaRequest
   end
 end
 
-class MobilizeAmerica
+class MobilizeAmericaClient
   def initialize(api_key, org_id)
     @api_key = api_key
     @org_id = org_id
@@ -143,7 +158,7 @@ class MobilizeAmerica
     results.select(&:should_appear?)
   end
 
-  def map_entries
+  def event_map_entries
     events.map(&:map_entry)
   end
 end

@@ -1,7 +1,8 @@
 require 'json'
 require 'aws-sdk-s3'
 require 'dotenv'
-require_relative 'airtable'
+require_relative 'hubs_airtable'
+require_relative 'events_airtable'
 require_relative 'mobilize_america'
 
 Dotenv.load
@@ -9,13 +10,13 @@ Dotenv.load
 entries = []
 
 # Load data from the events airtable (barely used)
-entries += Airtable.map_entries
+entries += AirtableEvent.map_entries
 
 # Load data from our two mobilize america accounts (most common use-case)
 (ENV['MOBILIZE_AMERICA_INFO'] || '').split(',').each do |ma_info|
   api_key, org_id = ma_info.split('_')
-  ma_client = MobilizeAmerica.new(api_key, org_id)
-  entries += ma_client.map_entries
+  ma_client = MobilizeAmericaClient.new(api_key, org_id)
+  entries += ma_client.event_map_entries
 end
 
 # Add event types to the data, mapping them to a common

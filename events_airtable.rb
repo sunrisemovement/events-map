@@ -3,6 +3,7 @@ require 'dotenv'
 require 'pry'
 require 'rb-readline'
 require 'json'
+require_relative 'event'
 
 Dotenv.load
 Airrecord.api_key = ENV['AIRTABLE_API_KEY']
@@ -78,7 +79,9 @@ class EventTypeDictionary < Airrecord::Table
 end
 
 # Wrapper class for Airtable events
-class Airtable < Airrecord::Table
+class AirtableEvent < Airrecord::Table
+  include Event
+
   self.base_key = ENV['AIRTABLE_APP_KEY']
   self.table_name = 'Events'
 
@@ -143,8 +146,17 @@ class Airtable < Airrecord::Table
       location_name: self['location_name'],
       registration_link: self['permalink'],
       latitude: self['latitude'],
-      longitude: self['longitude']
+      longitude: self['longitude'],
+      hub_id: hub_id
     }
+  end
+
+  def contact_email
+    self['host_email']
+  end
+
+  def contact_name
+    "#{self['host_first_name']} #{self['host_last_name']}"
   end
 
   def self.map_entries
