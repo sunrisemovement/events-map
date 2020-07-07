@@ -1,9 +1,18 @@
 require 'httparty'
 require 'dotenv'
-require 'pry'
 
+###
+# This file contains helpers for getting event data from ActionNetwork.
+#
+# Note that ActionNetwork has been phased out, so this code is no longer in
+# active use.
+###
+
+# Load environment variables (used to get API key)
 Dotenv.load
 
+# Wrapper class around the ActionNetwork Event JSON object that provides helper
+# methods for transforming it into JSON for the event map
 class ActionNetworkEvent
   attr_reader :data
 
@@ -19,6 +28,7 @@ class ActionNetworkEvent
     data['visibility'] == 'public'
   end
 
+  # Events should appear if they're public and if they haven't already happened
   def should_appear?
     !data['start_date'].nil? && is_public? && Date.parse(data['start_date']) >= Date.today
   end
@@ -64,6 +74,8 @@ class ActionNetworkEvent
   end
 end
 
+# Wrapper class around the actual request to the ActionNetwork API. Uses the
+# 'httparty' library.
 class ActionNetworkRequest
   include HTTParty
   base_uri 'https://actionnetwork.org'
@@ -94,6 +106,8 @@ class ActionNetworkRequest
   end
 end
 
+# Wrapper class around ActionNetwork overall. This makes requests to the
+# /events?page=X endpoint until we reach the last page.
 class ActionNetwork
   def self.events(max_pages=100)
     results = []

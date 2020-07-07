@@ -1,5 +1,8 @@
 require_relative 'hubs_airtable'
 
+# This is a module that is included in specific event wrapper classes -- it's
+# main use is to provide helpers for finding associated hubs. Most of the
+# business logic for that lives in hubs_airtable.rb, though.
 module Event
   def map_entry
     raise NotImplementedError

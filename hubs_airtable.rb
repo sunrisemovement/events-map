@@ -4,13 +4,29 @@ require 'set'
 require 'active_support'
 require 'active_support/core_ext'
 
+##
+#
+# This file contains helpers for requesting hub information from the Hub
+# Tracking Airtable, written using the `airrecord` gem.
+#
+# The only context in which this is used is for determining the Airtable ID of
+# the hub that created the event, which is used in Sunrise Hub Microsites to
+# render a list of events created by that hub. It's not used directly in the
+# event map as of July 4th, 2020, though it theoretically could be.
+#
+##
+
+# Load environment variables that tell us the API key and app id which will let
+# us access the Hub Tracking Airtable.
 Dotenv.load
 Airrecord.api_key = ENV['AIRTABLE_API_KEY']
 
+# Wrapper class around hub leaders
 class Leader < Airrecord::Table
   self.base_key = ENV['HUBHUB_APP_KEY']
   self.table_name = 'Hub Leaders'
 
+  # Skip leaders that are marked as deleted
   def deleted?
     self['Deleted by Hubhub?']
   end
@@ -20,6 +36,7 @@ class Leader < Airrecord::Table
   end
 end
 
+# Wrapper class around hubs
 class Hub < Airrecord::Table
   self.base_key = ENV['HUBHUB_APP_KEY']
   self.table_name = 'Hubs'
@@ -38,6 +55,7 @@ class Hub < Airrecord::Table
   end
 
   def leader_ids
+    # Return the Airtable IDs of the hub's leaders
     self['Hub Leaders'] || []
   end
 
@@ -54,6 +72,8 @@ class Hub < Airrecord::Table
   end
 
   def self.visible
+    # Return a list of hubs that are allowed to appear on the map -- don't want
+    # to consider inactive hubs or hubs that haven't fully incorporated yet.
     @visible ||= all.select(&:should_appear_on_map?)
   end
 
