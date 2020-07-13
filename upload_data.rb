@@ -4,6 +4,7 @@ require 'dotenv'
 require_relative 'hubs_airtable'
 require_relative 'events_airtable'
 require_relative 'mobilize_america'
+require_relative 'every_action'
 
 ##
 #
@@ -21,7 +22,13 @@ Dotenv.load
 # Array to store the event objects
 entries = []
 
-# Load data from the events airtable (barely used)
+# Load event data from our every action accounts
+ENV['EVERY_ACTION_INFO'].to_s.split(',').each do |api_key|
+  ea_client = EveryActionClient.new(api_key)
+  entries += ea_client.map_entries
+end
+
+# Load event data from the events airtable (barely used)
 entries += AirtableEvent.map_entries
 
 # Load event data from our two mobilize america accounts (most common use-case)
