@@ -1066,7 +1066,7 @@ function initMap(events) {
     }
     popupHtml += '</div>';
 
-    var popup = new mapboxgl.Popup({ closeOnClick: true, anchor: "left" })
+    var popup = new mapboxgl.Popup({ closeOnClick: true, anchor: "bottom" })
       .on('close', function() { $('#event-map .event-card').removeClass('active'); })
       .setLngLat(currentFeature.geometry.coordinates)
       .setHTML(popupHtml)
