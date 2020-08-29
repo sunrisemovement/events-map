@@ -17,6 +17,10 @@ class MobilizeAmericaTimeslot
     @data = data
   end
 
+  def id
+    data['id']
+  end
+
   def start_date
     Time.at(data['start_date'])
   end
@@ -35,16 +39,41 @@ class MobilizeAmericaTimeslot
   end
 end
 
+# The class wraps "attendance" JSON objects from MA's API, adding helper methods
+# to exclude cancelled events
+class MobilizeAmericaAttendance
+  attr_reader :data # The original data from the API
+
+  def initialize(data)
+    @data = data
+  end
+
+  def cancelled?
+    data['status'] == 'CANCELLED'
+  end
+
+  def timeslot_id
+    (data['timeslot'] || {})['id']
+  end
+end
+
 # The class wraps event JSON objects from MA's API, adding helper methods to
 # transform them into event JSON for the Sunrise event map.
 class MobilizeAmericaEvent
   include Event # Include some platform-agonstic helper methods from event.rb
 
   attr_reader :data # The original data from the API
+  attr_reader :api_key, :org_id # Authentication info for attendance sub-requests
 
   # Initialize MobilizeAmericaEvents with JSON data from the MA API
-  def initialize(data)
+  def initialize(data, api_key, org_id)
     @data = data
+    @api_key = api_key
+    @org_id = org_id
+  end
+
+  def id
+    data['id']
   end
 
   # Events should appear if they're marked as public, and if they're upcoming.
@@ -76,19 +105,21 @@ class MobilizeAmericaEvent
     TZInfo::Timezone.get(data['timezone']) rescue nil
   end
 
+  def format_time(date)
+    if tz && date
+      tz.to_local(date).strftime('%FT%T%:z')
+    end
+  end
+
   # The start date of the first timeslot, in the local time zone, as a string
   def start_date
-    if tz && slot = first_timeslot
-      tz.to_local(slot.start_date).strftime('%FT%T%:z')
-    end
+    format_time(first_timeslot.start_date) if first_timeslot
   end
 
   # The end date of the last timeslot, in the local timezone, as a string
   # (or the start date of the last timeslot if no end date is provided)
   def end_date
-    if tz && slot = last_timeslot
-      tz.to_local(slot.end_date).strftime('%FT%T%:z') rescue tz.to_local(slot.start_date).strftime('%FT%T%:z')
-    end
+    format_time(last_timeslot.end_date || last_timeslot.start_date) if last_timeslot
   end
 
   # The main method of this class -- converts the MobilizeAmerica JSON to
@@ -109,8 +140,22 @@ class MobilizeAmericaEvent
       end_date: end_date,
       latitude: latitude,
       longitude: longitude,
+      timeslots: timeslot_map_entries,
       hub_id: hub_id # this method comes from event.rb
     }
+  end
+
+  # This method produces a summary of each event timeslot, along with the
+  # number of confirmed/registered attendees so far (which we obtain via
+  # additional API requests)
+  def timeslot_map_entries
+    timeslots.reject(&:finished?).map { |slot| {
+      start_date: format_time(slot.start_date),
+      end_date: format_time(slot.end_date),
+      is_full: slot.data['is_full'],
+      #instructions: slot.data['instructions'],
+      num_registered: attendances.select{|a| a.timeslot_id == slot.id }.length
+    }}
   end
 
   def location
@@ -140,42 +185,109 @@ class MobilizeAmericaEvent
   def contact_name
     contact['name']
   end
+
+  # Wrapper around the auxiliary API requests for attendance information
+  def attendances_request
+    @attendances_request ||= MobilizeAmericaAttendancesRequest.new(@api_key, org_id: @org_id, event_id: id)
+  end
+
+  # Attendance information for this event
+  def attendances
+    attendances_request.results.reject(&:cancelled?)
+  end
 end
 
-# Wrapper class representing individual /events API requests
-# to Mobilize America. Uses the `httparty` Ruby gem.
-class MobilizeAmericaRequest
+# Superclass for making API requests to mobilize america for a list of
+# resources.  Handles pagination and authorization. Uses the `httparty` Ruby
+# gem.
+class MobilizeAmericaListRequest
   include HTTParty
   base_uri 'https://api.mobilize.us'
+  attr_reader :api_key, :page, :options
+  MAX_PAGES = 250
 
-  # Event requests are specific to an organization (`org_id`), require an API
-  # key (`api_key`), and are also paginated (`page`)
-  def initialize(api_key, org_id, page)
-    @options = {
-      query: {
-        page: page
-      },
-      headers: {
-        'Authorization' => "Bearer #{api_key}"
-      }
-    }
+  # Event requests require an API key (`api_key`), and are also paginated (`page`)
+  def initialize(api_key, page: 1, **options)
+    puts "REQUEST"
+    @api_key = api_key
+    @page = page
+    @options = options
+  end
 
-    @events_url = "/v1/organizations/#{org_id}/events"
+  # The base URL for the request (excluding pagination parameters). Define this
+  # in subclasses!
+  def request_url
+    raise NotImplementedError
+  end
+
+  # A helper function to map `data` elements to easier-to-handle objects.
+  # (Re-)define this in subclasses if desired!
+  def results
+    data
   end
 
   # Make the request and cache the response in an instance variable
   def response
-    @response ||= self.class.get(@events_url, @options)
+    @response ||= self.class.get(request_url, {
+      query: { page: page },
+      headers: { 'Authorization' => "Bearer #{api_key}" }
+    })
   end
 
-  # Check if there are more pages of results for this organization
+  # Check if there are more pages of results
   def last_page?
-    response['next'].nil?
+    response['next'].nil? || page >= MAX_PAGES
   end
 
-  # Convert all of the events in the JSON response to our wrapper object
+  # Instantiate a new request for the next page
+  def next_page_request
+    self.class.new(api_key, page: page+1, **options) unless last_page?
+  end
+
+  # Get data from the response, possibly recursively triggering a request for
+  # the next page.
+  def data
+    @data ||= if last_page?
+      response['data']
+    else
+      response['data'] + next_page_request.data
+    end
+  end
+end
+
+# Wrapper class representing individual /events API requests
+# to Mobilize America. 
+class MobilizeAmericaEventsRequest < MobilizeAmericaListRequest
+  def org_id
+    options[:org_id]
+  end
+
+  def request_url
+    "/v1/organizations/#{org_id}/events"
+  end
+
   def results
-    response['data'].map { |r| MobilizeAmericaEvent.new(r) }
+    data.map { |r| MobilizeAmericaEvent.new(r, api_key, org_id) }
+  end
+end
+
+# Wrapper class representing individual attendances API requests
+# to Mobilize America. 
+class MobilizeAmericaAttendancesRequest < MobilizeAmericaListRequest
+  def event_id
+    options[:event_id]
+  end
+
+  def org_id
+    options[:org_id]
+  end
+
+  def request_url
+    "/v1/organizations/#{org_id}/events/#{event_id}/attendances"
+  end
+
+  def results
+    data.map { |r| MobilizeAmericaAttendance.new(r) }
   end
 end
 
@@ -187,18 +299,10 @@ class MobilizeAmericaClient
     @org_id = org_id
   end
 
-  # Get events for this organization
-  def events(max_pages=100)
-    results = []
-    max_pages.times do |page|
-      # Repeatedly request events, page by page, until we reach the final page
-      # of results (or for some maximum number of pages)
-      req = MobilizeAmericaRequest.new(@api_key, @org_id, page+1)
-      results += req.results
-      break if req.last_page?
-    end
-    # Hide the events which are not public or have already happened
-    results.select(&:should_appear?)
+  # Get public, upcoming events for this organization
+  def events
+    request = MobilizeAmericaEventsRequest.new(@api_key, org_id: @org_id)
+    request.results.select(&:should_appear?)
   end
 
   def event_map_entries
