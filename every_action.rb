@@ -1,12 +1,34 @@
 class EveryActionClient
+  MAX_ITERS = 100
+
   attr_reader :api_key
 
   def initialize(api_key)
     @api_key = api_key
   end
 
+  # Request events from the EveryAction API, recursively handling pagination
+  def events_request(url=nil, iter=0)
+    url ||= "https://api.securevan.com/v4/events?startingAfter=#{Date.today-20}&$expand=onlineforms,locations,codes,shifts,roles,notes"
+    resp = HTTParty.get(url,
+      basic_auth: {
+        username: "sunrise-movement", # NOTE: hardcoding username to Sunrise
+        password: "#{api_key}|1"
+      },
+      headers: { "Content-Type" => "application/json" }
+    )
+    res = resp["items"]
+    if resp["nextPageLink"] && iter < MAX_ITERS
+      res += events_request(resp["nextPageLink"], iter+1)
+    end
+    res
+  end
+
+  def events
+    @events ||= events_request.map { |e| EveryActionEvent.new(e) }
+  end
+
   def map_entries
-    events = every_action_events_request(api_key).map { |e| EveryActionEvent.new(e) }
     events.select(&:should_appear_on_map?).map(&:map_entry)
   end
 end
@@ -18,20 +40,12 @@ class EveryActionEvent
     @data = data
   end
 
-  def allowed_event_types
-    ["Hub Meeting",
-     "Canvass",
-     "Phonebank",
-     "Other",
-     "Rally/DirectAction",
-     "SunSklDefundPolice",
-     "SunSklEscuelita",
-     "Workshop",
-     "Mass Call (Non-SoM)"]
+  def event_type_blacklist
+    ["SunSklData"]
   end
 
   def should_appear_on_map?
-    data["onlineForms"].present? && allowed_event_types.include?(event_type) && data['isActive']
+    data["onlineForms"].present? && !event_type_blacklist.include?(event_type) && data['isActive']
   end
 
   def event_type
@@ -44,15 +58,18 @@ class EveryActionEvent
       state: address['stateOrProvince'],
       zip_code: address['zipOrPostalCode'],
       location_name: location['name'],
-      event_source: 'EveryAction',
+      event_source: 'everyaction',
       event_type: event_type,
+      is_national: true,
       description: data['description'],
       event_title: data['name'],
       registration_link: registration_link,
       start_date: data['startDate'],
       end_date: data['endDate'],
       latitude: latitude,
-      longitude: longitude
+      longitude: longitude,
+      online_forms: data['onlineForms'],
+      hub_id: nil
     }
   end
 
@@ -79,38 +96,4 @@ class EveryActionEvent
   def longitude
     (address["geoLocation"] || {})["lon"]
   end
-end
-
-def every_action_events_request(api_key, url=nil)
-  url ||= "https://api.securevan.com/v4/events?startingAfter=#{Date.today-1}&$expand=onlineforms,locations,codes,shifts,roles,notes"
-  puts url
-  resp = HTTParty.get(url,
-    basic_auth: {
-      username: "sunrise-movement",
-      password: "#{api_key}|1"
-    },
-    headers: { "Content-Type" => "application/json" }
-  )
-  res = resp["items"]
-  if resp["nextPageLink"]
-    res += every_action_events_request(api_key, resp["nextPageLink"])
-  end
-  res
-end
-
-def every_action_forms_request(api_key, url=nil)
-  url ||= "https://api.securevan.com/v4/onlineActionsForms"
-  puts url
-  resp = HTTParty.get(url,
-    basic_auth: {
-      username: "sunrise-movement",
-      password: "#{api_key}|1"
-    },
-    headers: { "Content-Type" => "application/json" }
-  )
-  res = resp["items"]
-  if resp["nextPageLink"]
-    res += every_action_forms_request(api_key, resp["nextPageLink"])
-  end
-  res
 end

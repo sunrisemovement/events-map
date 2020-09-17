@@ -52,7 +52,7 @@ class EventTypeDictionary < Airrecord::Table
     entries.each_with_object([]) do |entry, list|
       src = entry[:event_source]
 
-      if src == 'Airtable'
+      if src == 'airtable'
         # Airtable events that have made it this far are always included
         # and have the right event type
         list << entry
@@ -139,7 +139,7 @@ class AirtableEvent < Airrecord::Table
       state: self['state'],
       address: self['address'],
       zip_code: self['zip_code'],
-      event_source: 'Airtable',
+      event_source: 'airtable',
       event_type: self['event_type'],
       event_title: self['title'],
       description: self['description_text'],
@@ -147,6 +147,7 @@ class AirtableEvent < Airrecord::Table
       registration_link: self['permalink'],
       latitude: self['latitude'],
       longitude: self['longitude'],
+      is_national: false,
       hub_id: hub_id
     }
   end
