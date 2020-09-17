@@ -28,3 +28,11 @@ s3.put_object(
   key: 'map.html',
   body: File.read('./event_map.html') # read the HTML from the file
 )
+
+# Upload zip codes
+s3.put_object(
+  bucket: ENV['AWS_BUCKET'],
+  acl: 'public-read',
+  key: 'zip_codes.json',
+  body: File.read('./zip_codes.json')
+)
