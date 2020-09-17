@@ -908,12 +908,13 @@ function initMap(events) {
   });
 
   let zipCodesPromise = null
+  const zipCodesUrl = 'https://sunrise-events.s3.amazonaws.com/zip_codes.json';
   /**
    * @returns {Promise<{ [zip: string]: [number, number] }}>} a mapping of zipcode to [lat, lng]
    */
   const loadZipCodes = () => {
     if (zipCodesPromise === null) {
-      zipCodesPromise = fetch('/zip_codes.json').then((response) => response.json())
+      zipCodesPromise = fetch(zipCodesUrl).then((response) => response.json())
     }
     return zipCodesPromise
   }
