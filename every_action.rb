@@ -45,7 +45,7 @@ class EveryActionEvent
   end
 
   def should_appear_on_map?
-    data["onlineForms"].present? && !event_type_blacklist.include?(event_type) && data['isActive']
+    registration_link.present? && !event_type_blacklist.include?(event_type) && data['isActive']
   end
 
   def event_type
@@ -73,8 +73,12 @@ class EveryActionEvent
     }
   end
 
+  def online_forms
+    data['onlineForms'].select{|f| f["status"] == "Published" }
+  end
+
   def registration_link
-    data['onlineForms'].first['url'] rescue nil
+    online_forms.first['url'] rescue nil
   end
 
   def locations

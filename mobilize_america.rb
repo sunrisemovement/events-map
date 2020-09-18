@@ -41,10 +41,12 @@ class MobilizeAmericaEvent
   include Event # Include some platform-agonstic helper methods from event.rb
 
   attr_reader :data # The original data from the API
+  attr_reader :org_id # The mobilize america organization id
 
   # Initialize MobilizeAmericaEvents with JSON data from the MA API
-  def initialize(data)
+  def initialize(data, org_id)
     @data = data
+    @org_id = org_id
   end
 
   # Events should appear if they're marked as public, and if they're upcoming.
@@ -91,6 +93,14 @@ class MobilizeAmericaEvent
     end
   end
 
+  def is_national
+    # Slightly hardcoded logic, meant to be overly exclusive for now
+    return false unless natl_id = ENV['NATIONAL_MOBILIZE_ORG_ID']
+    return false unless org_id.to_s == natl_id.to_s
+    return false unless contact_email.to_s =~ /@sunrisemovement\.org$/
+    true
+  end
+
   # The main method of this class -- converts the MobilizeAmerica JSON to
   # Sunrise Event Map JSON
   def map_entry
@@ -102,7 +112,7 @@ class MobilizeAmericaEvent
       event_source: 'mobilize',
       event_type: data['event_type'],
       event_title: data['title'],
-      is_national: false,
+      is_national: is_national,
       description: data['description'],
       location_name: location['venue'],
       registration_link: data['browser_url'],
@@ -161,6 +171,8 @@ class MobilizeAmericaRequest
       }
     }
 
+    @org_id = org_id
+
     @events_url = "/v1/organizations/#{org_id}/events"
   end
 
@@ -176,7 +188,7 @@ class MobilizeAmericaRequest
 
   # Convert all of the events in the JSON response to our wrapper object
   def results
-    response['data'].map { |r| MobilizeAmericaEvent.new(r) }
+    response['data'].map { |r| MobilizeAmericaEvent.new(r, @org_id) }
   end
 end
 

@@ -22,14 +22,13 @@ Dotenv.load
 # Array to store the event objects
 entries = []
 
-# Load event data from our every action accounts
+# Load event data from our EveryAction account(s)
 ENV['EVERY_ACTION_INFO'].to_s.split(',').each do |api_key|
   ea_client = EveryActionClient.new(api_key)
   entries += ea_client.map_entries
 end
 
-
-# Load event data from our two mobilize america accounts (most common use-case)
+# Load event data from our two MobilizeAmerica accounts (most common use-case)
 (ENV['MOBILIZE_AMERICA_INFO'] || '').split(',').each do |ma_info|
   api_key, org_id = ma_info.split('_')
   ma_client = MobilizeAmericaClient.new(api_key, org_id)
