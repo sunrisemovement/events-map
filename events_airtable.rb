@@ -32,15 +32,14 @@ class EventTypeDictionary < Airrecord::Table
     dict = Hash.new { |h,k| h[k] = {} }
 
     all.each do |d|
-      src_et = d["source_event_type"].to_s.strip.downcase
-      [src_et, src_et.gsub(/\s+/, '_')].each do |et|
-        src = d["Source"].to_s.downcase
-        src_et = et.to_s.downcase
-        if d["exclude_from_map"].to_s == "1"
-          dict[src][src_et] = false
-        else
-          dict[src][src_et] = d["map_event_type"]
-        end
+      source = d["Source"].to_s.strip.downcase
+      old_et = d["source_event_type"].to_s.strip.downcase
+      new_et = d["map_event_type"]
+
+      if d["exclude_from_map"].to_s == "1"
+        dict[source][old_et] = false
+      else
+        dict[source][old_et] = new_et
       end
     end
 
@@ -52,28 +51,29 @@ class EventTypeDictionary < Airrecord::Table
     # using that data to skip events with types we want to keep private.
     dict = self.mapping
     entries.each_with_object([]) do |entry, list|
-      src = entry[:event_source].to_s.downcase
-      src_et = entry[:event_type].to_s.strip.downcase
-      map_et = dict[src][src_et.to_s.strip.downcase]
+      source = entry[:event_source].to_s.strip.downcase
 
-      if src == 'airtable'
+      if source == 'airtable'
         # Airtable events that have made it this far are always included
         # and have the right event type
         list << entry
         next
       end
 
-      if map_et === false
+      old_et = entry[:event_type].to_s.strip.downcase
+      new_et = dict[source][old_et]
+
+      if new_et === false
         # This event type has specifically been excluded from the map
-        puts "Skipping specifically-excluded #{src} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
+        puts "Skipping specifically-excluded #{source} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
         next
-      elsif map_et.nil?
+      elsif new_et.blank?
         # This event type is unrecognized; warn but keep it
-        puts "Unmapped #{src} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
+        puts "Unmapped #{source} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
         list << entry
       else
         # This event type has been successfully mapped! :D
-        entry[:event_type] = map_et
+        entry[:event_type] = new_et
         list << entry
       end
     end
