@@ -1,18 +1,21 @@
 class EveryActionClient
   MAX_ITERS = 100
 
-  attr_reader :api_key
+  attr_reader :api_key, :username
 
-  def initialize(api_key)
+  def initialize(api_key, username: "sunrise-movement")
+    # Initialize the client with an API key and an optional username,
+    # defaulting to Sunrise
+    @username = username
     @api_key = api_key
   end
 
-  # Request events from the EveryAction API, recursively handling pagination
   def events_request(url=nil, iter=0)
-    url ||= "https://api.securevan.com/v4/events?startingAfter=#{Date.today-20}&$expand=onlineforms,locations,codes,shifts,roles,notes"
+    # Request upcoming events from the EveryAction API, recursively handling pagination
+    url ||= "https://api.securevan.com/v4/events?startingAfter=#{Date.today-1}&$expand=onlineforms,locations,codes,shifts,roles,notes"
     resp = HTTParty.get(url,
       basic_auth: {
-        username: "sunrise-movement", # NOTE: hardcoding username to Sunrise
+        username: username,
         password: "#{api_key}|1"
       },
       headers: { "Content-Type" => "application/json" }
@@ -25,10 +28,13 @@ class EveryActionClient
   end
 
   def events
+    # Make events requests (possibly recursively), then wrap each response in a
+    # helper object for filtering and formatting
     @events ||= events_request.map { |e| EveryActionEvent.new(e) }
   end
 
   def map_entries
+    # Filter events and get their map entries.
     events.select(&:should_appear_on_map?).map(&:map_entry)
   end
 end
@@ -37,22 +43,29 @@ class EveryActionEvent
   attr_reader :data
 
   def initialize(data)
+    # Initialize with the raw API response
     @data = data
   end
 
   def event_type_blacklist
+    # Explicitly exclude a subset of event types (currently just internal data
+    # events for Sunrise School)
     ["SunSklData"]
   end
 
   def should_appear_on_map?
+    # Events appear if they're associated with a published online form, if the
+    # event type is not blacklisted, and if they're listed as active
     registration_link.present? && !event_type_blacklist.include?(event_type) && data['isActive']
   end
 
   def event_type
+    # Get the event type from the response (w/ null-safety)
     (data["eventType"] || {})["name"]
   end
 
   def map_entry
+    # The main method of this class -- this is the data we surface in the JSON.
     {
       city: address['city'],
       state: address['stateOrProvince'],
@@ -74,10 +87,12 @@ class EveryActionEvent
   end
 
   def online_forms
-    data['onlineForms'].select{|f| f["status"] == "Published" }
+    # Select online forms that are currently published.
+    (data['onlineForms'] || []).select{|f| f["status"] == "Published" }
   end
 
   def registration_link
+    # Get the registration link for the first online form.
     online_forms.first['url'] rescue nil
   end
 
