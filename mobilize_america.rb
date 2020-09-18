@@ -93,8 +93,12 @@ class MobilizeAmericaEvent
     end
   end
 
+  # The national site needs to distinguish national Sunrise events from local /
+  # hub-sponsored Sunrise events.  Most national events are on EveryAction, but
+  # some are on Mobilize. Currently, these are just within a single
+  # organization (which we can set by environment variable), and only hosted by
+  # @sunrisemovement.org emails.
   def is_national
-    # Slightly hardcoded logic, meant to be overly exclusive for now
     return false unless natl_id = ENV['NATIONAL_MOBILIZE_ORG_ID']
     return false unless org_id.to_s == natl_id.to_s
     return false unless contact_email.to_s =~ /@sunrisemovement\.org$/
