@@ -117,6 +117,7 @@ class MobilizeAmericaEvent
       is_national: is_national,
       description: data['description'],
       location_name: location['venue'],
+      featured_image_url: data['featured_image_url'],
       registration_link: data['browser_url'],
       start_date: start_date,
       end_date: end_date,
