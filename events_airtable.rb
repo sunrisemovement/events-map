@@ -65,11 +65,11 @@ class EventTypeDictionary < Airrecord::Table
 
       if map_et === false
         # This event type has specifically been excluded from the map
-        puts "Skipping specifically-excluded #{src} event type #{entry[:event_type].inspect}"
+        puts "Skipping specifically-excluded #{src} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
         next
       elsif map_et.nil?
         # This event type is unrecognized; warn but keep it
-        puts "Unmapped #{src} event type #{entry[:event_type].inspect}"
+        puts "Unmapped #{src} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
         list << entry
       else
         # This event type has been successfully mapped! :D
