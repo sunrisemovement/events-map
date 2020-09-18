@@ -47,16 +47,11 @@ class EveryActionEvent
     @data = data
   end
 
-  def event_type_blacklist
-    # Explicitly exclude a subset of event types (currently just internal data
-    # events for Sunrise School)
-    ["SunSklData"]
-  end
-
   def should_appear_on_map?
-    # Events appear if they're associated with a published online form, if the
-    # event type is not blacklisted, and if they're listed as active
-    registration_link.present? && !event_type_blacklist.include?(event_type) && data['isActive']
+    # Events appear if they're associated with a published online form and if
+    # they're listed as active (and also if they're not excluded by event type,
+    # but that happens later)
+    registration_link.present? && data['isActive']
   end
 
   def event_type
