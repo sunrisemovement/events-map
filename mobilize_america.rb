@@ -93,14 +93,32 @@ class MobilizeAmericaEvent
     end
   end
 
-  # The national site needs to distinguish national Sunrise events from local /
-  # hub-sponsored Sunrise events.  Most national events are on EveryAction, but
-  # some are on Mobilize. Currently, these are just within a whitelist of
-  # organizations, and not `created_by_volunteer_host`s
+  # From Cormac:
+  #   Coordinated and IE MobilizeAmerica events will show up in the national
+  #   event carousel if they are hosted by an @sunrisemovement email address or
+  #   have the tag "national event" and are NOT marked as hosted by a volunteer
   def is_national
-    return false unless ['2949', '4094'].include? org_id.to_s
-    return false if data["created_by_volunteer_host"]
-    true
+    national_committee? && (national_email? || (national_tag? && !volunteer_host?))
+  end
+
+  def national_committee?
+    # Check if event is coordinated / IE
+    ['2949', '4094'].include? org_id.to_s
+  end
+
+  def national_email?
+    # Check if event has a national email address
+    contact_email.to_s =~ /@sunrisemovement\.org$/
+  end
+
+  def national_tag?
+    # Check if event is tagged as national
+    (data['tags'] || []).any? { |t| t['name'] == "National Phonebank" || t['name'] == "National Event" }
+  end
+
+  def volunteer_host?
+    # Check if event is tagged as from a volunteer
+    data["created_by_volunteer_host"]
   end
 
   # The main method of this class -- converts the MobilizeAmerica JSON to
