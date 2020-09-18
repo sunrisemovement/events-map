@@ -34,10 +34,12 @@ class EventTypeDictionary < Airrecord::Table
     all.each do |d|
       src_et = d["source_event_type"].to_s.strip.downcase
       [src_et, src_et.gsub(/\s+/, '_')].each do |et|
+        src = d["Source"].to_s.downcase
+        src_et = et.to_s.downcase
         if d["exclude_from_map"].to_s == "1"
-          dict[d["Source"]][et] = false
+          dict[src][src_et] = false
         else
-          dict[d["Source"]][et] = d["map_event_type"]
+          dict[src][src_et] = d["map_event_type"]
         end
       end
     end
@@ -50,7 +52,9 @@ class EventTypeDictionary < Airrecord::Table
     # using that data to skip events with types we want to keep private.
     dict = self.mapping
     entries.each_with_object([]) do |entry, list|
-      src = entry[:event_source]
+      src = entry[:event_source].to_s.downcase
+      src_et = entry[:event_type].to_s.strip.downcase
+      map_et = dict[src][src_et.to_s.strip.downcase]
 
       if src == 'airtable'
         # Airtable events that have made it this far are always included
@@ -59,15 +63,13 @@ class EventTypeDictionary < Airrecord::Table
         next
       end
 
-      src_et = entry[:event_type]
-      map_et = dict[src][src_et.to_s.strip.downcase]
       if map_et === false
         # This event type has specifically been excluded from the map
-        puts "Skipping specifically-excluded #{src_et} event type #{src_et.inspect}"
+        puts "Skipping specifically-excluded #{src} event type #{entry[:event_type].inspect}"
         next
       elsif map_et.nil?
         # This event type is unrecognized; warn but keep it
-        puts "Unmapped #{src_et} event type #{src_et.inspect}"
+        puts "Unmapped #{src} event type #{entry[:event_type].inspect}"
         list << entry
       else
         # This event type has been successfully mapped! :D
