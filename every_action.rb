@@ -2,14 +2,15 @@ class EveryActionClient
   attr_reader :api_key, :username
 
   def initialize(api_key, username: "sunrise-movement")
-    # Initialize the client with an API key and an optional username,
-    # defaulting to Sunrise
+    # Currently default to "sunrise-movement" for the EA username, because it
+    # seems like this will be constant across keys, but may need to update if
+    # we add more keys later.
     @username = username
     @api_key = api_key
   end
 
   def events_request
-    # Request upcoming events from the EveryAction API, recursively handling pagination
+    # Request upcoming events from the EveryAction API, iteratively handling pagination
     url = "https://api.securevan.com/v4/events?startingAfter=#{Date.today-1}&$expand=onlineforms,locations,codes,shifts,roles,notes"
     res = []
     while url
