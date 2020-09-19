@@ -1,6 +1,4 @@
 class EveryActionClient
-  MAX_ITERS = 100
-
   attr_reader :api_key, :username
 
   def initialize(api_key, username: "sunrise-movement")
@@ -10,19 +8,20 @@ class EveryActionClient
     @api_key = api_key
   end
 
-  def events_request(url=nil, iter=0)
+  def events_request
     # Request upcoming events from the EveryAction API, recursively handling pagination
-    url ||= "https://api.securevan.com/v4/events?startingAfter=#{Date.today-1}&$expand=onlineforms,locations,codes,shifts,roles,notes"
-    resp = HTTParty.get(url,
-      basic_auth: {
-        username: username,
-        password: "#{api_key}|1"
-      },
-      headers: { "Content-Type" => "application/json" }
-    )
-    res = resp["items"]
-    if resp["nextPageLink"] && iter < MAX_ITERS
-      res += events_request(resp["nextPageLink"], iter+1)
+    url = "https://api.securevan.com/v4/events?startingAfter=#{Date.today-1}&$expand=onlineforms,locations,codes,shifts,roles,notes"
+    res = []
+    while url
+      resp = HTTParty.get(url,
+        basic_auth: {
+          username: username,
+          password: "#{api_key}|1"
+        },
+        headers: { "Content-Type" => "application/json" }
+      )
+      res += resp["items"]
+      url = resp["nextPageLink"]
     end
     res
   end
