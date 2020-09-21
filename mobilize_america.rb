@@ -41,10 +41,12 @@ class MobilizeAmericaEvent
   include Event # Include some platform-agonstic helper methods from event.rb
 
   attr_reader :data # The original data from the API
+  attr_reader :org_id # The mobilize america organization id
 
   # Initialize MobilizeAmericaEvents with JSON data from the MA API
-  def initialize(data)
+  def initialize(data, org_id)
     @data = data
+    @org_id = org_id
   end
 
   # Events should appear if they're marked as public, and if they're upcoming.
@@ -91,6 +93,34 @@ class MobilizeAmericaEvent
     end
   end
 
+  # From Cormac:
+  #   Coordinated and IE MobilizeAmerica events will show up in the national
+  #   event carousel if they are hosted by an @sunrisemovement email address or
+  #   have the tag "national event" and are NOT marked as hosted by a volunteer
+  def is_national
+    national_committee? && (national_email? || (national_tag? && !volunteer_host?))
+  end
+
+  def national_committee?
+    # Check if event is coordinated / IE
+    ['2949', '4094'].include? org_id.to_s
+  end
+
+  def national_email?
+    # Check if event has a national email address
+    contact_email.to_s =~ /@sunrisemovement\.org$/
+  end
+
+  def national_tag?
+    # Check if event is tagged as national
+    (data['tags'] || []).any? { |t| t['name'] == "National Phonebank" || t['name'] == "National Event" }
+  end
+
+  def volunteer_host?
+    # Check if event is tagged as from a volunteer
+    data["created_by_volunteer_host"]
+  end
+
   # The main method of this class -- converts the MobilizeAmerica JSON to
   # Sunrise Event Map JSON
   def map_entry
@@ -99,11 +129,13 @@ class MobilizeAmericaEvent
       state: location['region'],
       address: (location['address_lines'] || []).select{|l| l.size > 0}.join("\n"),
       zip_code: location['postal_code'],
-      event_source: 'MobilizeAmerica',
+      event_source: 'mobilize',
       event_type: data['event_type'],
       event_title: data['title'],
+      is_national: is_national,
       description: data['description'],
       location_name: location['venue'],
+      featured_image_url: data['featured_image_url'],
       registration_link: data['browser_url'],
       start_date: start_date,
       end_date: end_date,
@@ -160,6 +192,8 @@ class MobilizeAmericaRequest
       }
     }
 
+    @org_id = org_id
+
     @events_url = "/v1/organizations/#{org_id}/events"
   end
 
@@ -175,7 +209,7 @@ class MobilizeAmericaRequest
 
   # Convert all of the events in the JSON response to our wrapper object
   def results
-    response['data'].map { |r| MobilizeAmericaEvent.new(r) }
+    response['data'].map { |r| MobilizeAmericaEvent.new(r, @org_id) }
   end
 end
 
