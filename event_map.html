@@ -235,8 +235,7 @@ h3 {
   overflow-y: scroll;
   left: 0;
   z-index: 9999;
-  border-top: 1px solid var(--emap-light-grey);
-  border-right: 1px solid var(--emap-light-grey);
+  border: 1px solid var(--emap-light-grey);
 }
 
 #event-map.is-filtering .is-filtered {
@@ -475,10 +474,10 @@ h3 {
 
 #event-map .sticky #event-search-wrapper {
   position: fixed;
-  top: 0;
+  top: 1px;
+  left: 1px;
   padding: 2rem;
   background: var(--emap-yellow);
-  left: 0;
   width: calc(var(--emap-width) - 4rem);
   z-index: 1;
 }
