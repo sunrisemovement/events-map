@@ -185,8 +185,8 @@ h3 {
 #event-map .event-card-body-addr {
   font-weight: 600;
 }
-#event-map .event-card-body-addr {
-  margin-bottom: 15px;
+#event-map .desc-toggle {
+  margin-top: 15px;
 }
 
 
@@ -721,7 +721,29 @@ function eventAddress(ev) {
     parts.push(htmlEscape(ev.state));
   }
 
-  return parts.join("<br>");
+  if (parts.length) {
+    return `<div class='event-card-body-addr'>
+      ${parts.join("<br>")}
+    </div>`;
+  } else {
+    return "";
+  }
+}
+
+function eventDesc(ev) {
+  if (ev.description) {
+    return `<div class='desc-toggle desc-toggle-open'>
+      More info <span class='caret caret-down'></span>
+    </div>
+    <div class='event-card-body-desc'>
+      <div class='desc-toggle desc-toggle-close'>
+        Less info <span class='caret caret-up'></span>
+      </div>
+      <p>${htmlEscape(ev.description)}</p>
+    </div>`;
+  } else {
+    return "";
+  }
 }
 
 function eventCard(ev) {
@@ -735,18 +757,8 @@ function eventCard(ev) {
     <div class='event-card-body-date'>
       ${dateRangeStr(ev.start_date, ev.end_date)} at ${timeStr(ev.start_date)}
     </div>
-    <div class='event-card-body-addr'>
-      ${eventAddress(ev)}
-    </div>
-    <div class='desc-toggle desc-toggle-open'>
-      More info <span class='caret caret-down'></span>
-    </div>
-    <div class='event-card-body-desc'>
-      <div class='desc-toggle desc-toggle-close'>
-        Less info <span class='caret caret-up'></span>
-      </div>
-      <p>${htmlEscape(ev.description)}</p>
-    </div>
+    ${eventAddress(ev)}
+    ${eventDesc(ev)}
   </div>`;
 }
 
