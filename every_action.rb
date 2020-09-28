@@ -141,6 +141,10 @@ class EveryActionOnlineForm
   end
 
   def form_def_url
+    # It's not documented in their official API, but @Jared discovered there is
+    # a JSON endpoint containing form definition information not included in
+    # the limited onlineActionForms response, which in particular includes a
+    # featured image URL. This URL can be constructed as follows:
     url.sub("https://secure.everyaction.com",
             "https://secure.everyaction.com/v2/Forms")
   end
@@ -149,6 +153,8 @@ class EveryActionOnlineForm
     HTTParty.get(form_def_url, headers: {
       "Content-Type" => "application/json"
     })
+  rescue
+    {} # Return empty hash in the event this stops working in the future
   end
 
   def form_def
@@ -164,10 +170,14 @@ class EveryActionOnlineForm
   end
 
   def header_element
+    # The form definition object includes a header element that looks a lot
+    # like a description. This can be used in place of an explicitly given text
+    # description for the event.
     form_elements.detect{|el| el["name"] == "HeaderHtml" && el["type"] == "markup" }
   end
 
   def description
+    # Return the description described above (as an HTML string)
     if header_element
       header_element["markup"]
     end
