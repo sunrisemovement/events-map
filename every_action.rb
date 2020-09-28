@@ -72,23 +72,29 @@ class EveryActionEvent
       description: data['description'],
       event_title: data['name'],
       registration_link: registration_link,
+      featured_image_url: featured_image_url,
       start_date: data['startDate'],
       end_date: data['endDate'],
       latitude: latitude,
       longitude: longitude,
-      online_forms: data['onlineForms'],
+      online_forms: online_forms.map(&:json_entry),
       hub_id: nil
     }
   end
 
   def online_forms
     # Select online forms that are currently published.
-    (data['onlineForms'] || []).select{|f| f["status"] == "Published" }
+    (data['onlineForms'] || []).
+      map{|f| EveryActionOnlineForm.new(f) }.
+      select(&:published?)
   end
 
   def registration_link
-    # Get the registration link for the first online form.
-    online_forms.first['url'] rescue nil
+    online_forms.first.try(:url)
+  end
+
+  def featured_image_url
+    online_forms.first.try(:featured_image_url)
   end
 
   def locations
@@ -109,5 +115,61 @@ class EveryActionEvent
 
   def longitude
     (address["geoLocation"] || {})["lon"]
+  end
+end
+
+class EveryActionOnlineForm
+  attr_reader :data
+
+  def initialize(data)
+    @data = data
+  end
+
+  def json_entry
+    data.merge({
+      "bannerImagePath" => featured_image_url,
+      "description" => description
+    })
+  end
+
+  def published?
+    data["status"] == "Published"
+  end
+
+  def url
+    data["url"]
+  end
+
+  def form_def_url
+    url.sub("https://secure.everyaction.com",
+            "https://secure.everyaction.com/v2/Forms")
+  end
+
+  def form_def_response
+    HTTParty.get(form_def_url, headers: {
+      "Content-Type" => "application/json"
+    })
+  end
+
+  def form_def
+    @form_def ||= (form_def_response || {})
+  end
+
+  def featured_image_url
+    form_def["bannerImagePath"]
+  end
+
+  def form_elements
+    form_def["form_elements"] || []
+  end
+
+  def header_element
+    form_elements.detect{|el| el["name"] == "HeaderHtml" && el["type"] == "markup" }
+  end
+
+  def description
+    if header_element
+      header_element["markup"]
+    end
   end
 end
