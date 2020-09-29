@@ -45,6 +45,16 @@ entries = EventTypeDictionary.transform(entries)
 # Sort the events by their start date, using location as a backup
 entries.sort_by! { |e| [e[:start_date], e[:city] || e[:location_name] || 'zzz'] }
 
+# Add API-consumer-friendly strings for the start and end dates
+def time_string(d)
+  d.presence && Time.parse(d).strftime("%-m/%-d %-l:%M%P") rescue nil
+end
+
+entries.each do |e|
+  e[:start_date_string] = time_string(e[:start_date])
+  e[:end_date_string] = time_string(e[:end_date])
+end
+
 # Convert everything to JSON, with the current timestamp (to help with
 # debugging)
 map_json = JSON.dump({
