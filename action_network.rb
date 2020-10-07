@@ -36,9 +36,14 @@ class ActionNetworkEvent
   end
 
   # Events should appear if they're public and if they haven't already happened
-  sig { returns(T.nilable(T::Boolean)) } # TODO
+  sig { returns(T::Boolean) }
   def should_appear?
-    !data['start_date'].nil? && is_public? && Date.parse(data['start_date']) >= Date.today
+    return false unless is_public?
+
+    start_date = data['start_date']
+    return false if start_date.nil?
+
+    Date.parse(data['start_date']) >= Date.today
   end
 
   sig { returns(T::Hash[String, T.untyped]) }
