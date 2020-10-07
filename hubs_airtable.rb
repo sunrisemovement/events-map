@@ -1,3 +1,4 @@
+# typed: true
 require 'airrecord'
 require 'dotenv'
 require 'set'

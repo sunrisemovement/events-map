@@ -1,3 +1,4 @@
+# typed: false
 require 'sinatra'
 
 PAGE = File.read('./event_map.html')

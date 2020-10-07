@@ -1,3 +1,4 @@
+# typed: true
 require 'httparty'
 require 'tzinfo'
 require_relative 'event'

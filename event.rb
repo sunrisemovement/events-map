@@ -1,3 +1,4 @@
+# typed: false
 require_relative 'hubs_airtable'
 
 # This is a module that is included in specific event wrapper classes -- it's

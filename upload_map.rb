@@ -1,3 +1,4 @@
+# typed: strict
 require 'aws-sdk-s3'
 require 'dotenv'
 require 'json'

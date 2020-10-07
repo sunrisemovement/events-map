@@ -1,3 +1,4 @@
+# typed: false
 class EveryActionClient
   attr_reader :api_key, :username
 
