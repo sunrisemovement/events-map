@@ -1,4 +1,4 @@
-# typed: false
+# typed: true
 class EveryActionClient
   attr_reader :api_key, :username
 
@@ -12,7 +12,7 @@ class EveryActionClient
 
   def events_request
     # Request upcoming events from the EveryAction API, iteratively handling pagination
-    url = "https://api.securevan.com/v4/events?startingAfter=#{Date.today-1}&$expand=onlineforms,locations,codes,shifts,roles,notes"
+    url = T.let("https://api.securevan.com/v4/events?startingAfter=#{Date.today-1}&$expand=onlineforms,locations,codes,shifts,roles,notes", T.nilable(String))
     res = []
     while url
       resp = HTTParty.get(url,
