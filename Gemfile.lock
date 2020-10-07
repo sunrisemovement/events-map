@@ -59,6 +59,10 @@ GEM
       rack (~> 2.0)
       rack-protection (= 2.0.8.1)
       tilt (~> 2.0)
+    sorbet (0.5.5937)
+      sorbet-static (= 0.5.5937)
+    sorbet-runtime (0.5.5937)
+    sorbet-static (0.5.5937-universal-darwin-14)
     tilt (2.0.10)
     tzinfo (2.0.1)
       concurrent-ruby (~> 1.0)
@@ -75,6 +79,8 @@ DEPENDENCIES
   pry
   rb-readline
   sinatra
+  sorbet
+  sorbet-runtime
   tzinfo
 
 RUBY VERSION

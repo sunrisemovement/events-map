@@ -11,3 +11,6 @@ gem 'tzinfo'
 gem 'pry'
 gem 'rb-readline'
 gem 'sinatra' # for heroku deployment
+
+gem 'sorbet', :group => :development
+gem 'sorbet-runtime'
