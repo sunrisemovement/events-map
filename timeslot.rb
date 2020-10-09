@@ -9,8 +9,7 @@ class Timeslot
     @timezone = TimeZoneConverter.parse_timezone(timezone)
 
     # In the unlikely event we can't parse the timezone properly, fall back to
-    # the timezone implied by the UTC offset (which is almost always the same,
-    # but does appear to have rare exceptions)
+    # the timezone implied by the UTC offset
     @timezone ||= Time.find_zone(start_date.utc_offset).tzinfo
 
     # Convert the start and end date to the right timezone. If the end date
