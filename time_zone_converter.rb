@@ -14,6 +14,9 @@ module TimeZoneConverter
     if tz.is_a?(TZInfo::Timezone)
       return tz
     end
+    # EveryAction timezone strings are in Windows .NET format, and need to be
+    # converted to the IANA standard before the tzinfo library will recognize
+    # them
     if windows_to_iana.key?(tz)
       tz = windows_to_iana[tz]
     end
