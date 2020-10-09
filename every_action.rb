@@ -1,3 +1,5 @@
+require_relative 'timeslot'
+
 class EveryActionClient
   attr_reader :api_key, :username
 
@@ -59,9 +61,19 @@ class EveryActionEvent
     (data["eventType"] || {})["name"]
   end
 
+  def timeslots
+    [
+      Timeslot.new(
+        Time.parse(data['startDate']),
+        Time.parse(data['endDate']),
+        data['dotNetTimeZoneId']
+      )
+    ]
+  end
+
   def map_entry
     # The main method of this class -- this is the data we surface in the JSON.
-    {
+    entry = {
       city: address['city'],
       state: address['stateOrProvince'],
       zip_code: address['zipOrPostalCode'],
@@ -73,13 +85,17 @@ class EveryActionEvent
       event_title: data['name'],
       registration_link: registration_link,
       featured_image_url: featured_image_url,
-      start_date: data['startDate'],
-      end_date: data['endDate'],
+      timeslots: timeslots.map(&:as_json),
       latitude: latitude,
       longitude: longitude,
       online_forms: online_forms.map(&:json_entry),
       hub_id: nil
     }
+    entry[:end_date] = entry[:timeslots].last[:end_date]
+    entry[:start_date] = entry[:timeslots].first[:start_date]
+    entry[:end_date_string] = entry[:timeslots].last[:end_date_string]
+    entry[:start_date_string] = entry[:timeslots].first[:start_date_string]
+    entry
   end
 
   def online_forms
