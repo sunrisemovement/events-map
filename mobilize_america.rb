@@ -57,7 +57,7 @@ class MobilizeAmericaEvent
 
   def national_email?
     # Check if event has a national email address
-    contact_email.to_s =~ /@sunrisemovement\.org$/
+    !!(contact_email.to_s =~ /@sunrisemovement\.org$/)
   end
 
   def national_tag?
