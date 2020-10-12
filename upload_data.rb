@@ -28,15 +28,12 @@ ENV['EVERY_ACTION_INFO'].to_s.split(',').each do |api_key|
   entries += ea_client.map_entries
 end
 
-# Load event data from our two MobilizeAmerica accounts (most common use-case)
+# Load event data from our MobilizeAmerica account(s)
 (ENV['MOBILIZE_AMERICA_INFO'] || '').split(',').each do |ma_info|
   api_key, org_id = ma_info.split('_')
   ma_client = MobilizeAmericaClient.new(api_key, org_id)
   entries += ma_client.event_map_entries
 end
-
-# Load event data from the events airtable (barely used)
-entries += AirtableEvent.map_entries
 
 # Add event types to the data, mapping them to a common
 # user-friendly string using Airtable data
@@ -44,16 +41,6 @@ entries = EventTypeDictionary.transform(entries)
 
 # Sort the events by their start date, using location as a backup
 entries.sort_by! { |e| [e[:start_date], e[:city] || e[:location_name] || 'zzz'] }
-
-# Add API-consumer-friendly strings for the start and end dates
-def time_string(d)
-  d.presence && Time.parse(d).strftime("%-m/%-d %-l:%M%P") rescue nil
-end
-
-entries.each do |e|
-  e[:start_date_string] = time_string(e[:start_date])
-  e[:end_date_string] = time_string(e[:end_date])
-end
 
 # Convert everything to JSON, with the current timestamp (to help with
 # debugging)

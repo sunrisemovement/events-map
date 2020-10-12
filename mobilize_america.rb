@@ -1,39 +1,13 @@
 require 'httparty'
 require 'tzinfo'
 require_relative 'event'
+require_relative 'timeslot'
 
 ##
 #
 # This file contains helpers for getting event data from Mobilize America.
 #
 ##
-
-# The class wraps "timeslot" JSON objects from MA's API, adding helper methods
-# to decide whether an event has finished
-class MobilizeAmericaTimeslot
-  attr_reader :data
-
-  def initialize(data)
-    @data = data
-  end
-
-  def start_date
-    Time.at(data['start_date'])
-  end
-
-  def end_date
-    Time.at(data['end_date']) if data['end_date']
-  end
-
-  # An event is finished if all of its dates (start and end) are in the past
-  def finished?
-    if end_date
-      Time.now > end_date
-    else
-      Time.now > start_date
-    end
-  end
-end
 
 # The class wraps event JSON objects from MA's API, adding helper methods to
 # transform them into event JSON for the Sunrise event map.
@@ -54,43 +28,18 @@ class MobilizeAmericaEvent
   # events are upcoming because it's coming from the `first_timeslot` object,
   # which is only present if there is at least one non-finished timeslot.
   def should_appear?
-    data['visibility'] == 'PUBLIC' && data['address_visibility'] == 'PUBLIC' && start_date
+    data['visibility'] == 'PUBLIC' && data['address_visibility'] == 'PUBLIC' && timeslots.any?
   end
 
-  # All of the timeslots for the events, but as our wrapper objects
+  # All of the upcoming timeslots for the events, but as our wrapper objects
   def timeslots
-    data['timeslots'].map { |slot| MobilizeAmericaTimeslot.new(slot) }
-  end
-
-  # The earliest-starting timeslot which isn't already finished
-  def first_timeslot
-    timeslots.reject(&:finished?).sort_by(&:start_date).first
-  end
-
-  # The latest-ending timeslot which isn't already finished
-  def last_timeslot
-    timeslots.reject(&:finished?).sort_by(&:end_date).last
-  end
-
-  # The timezone for the event. Important to make sure events appear in local
-  # time.
-  def tz
-    TZInfo::Timezone.get(data['timezone']) rescue nil
-  end
-
-  # The start date of the first timeslot, in the local time zone, as a string
-  def start_date
-    if tz && slot = first_timeslot
-      tz.to_local(slot.start_date).strftime('%FT%T%:z')
-    end
-  end
-
-  # The end date of the last timeslot, in the local timezone, as a string
-  # (or the start date of the last timeslot if no end date is provided)
-  def end_date
-    if tz && slot = last_timeslot
-      tz.to_local(slot.end_date).strftime('%FT%T%:z') rescue tz.to_local(slot.start_date).strftime('%FT%T%:z')
-    end
+    data['timeslots'].map { |ts|
+      Timeslot.new(
+        Time.at(ts['start_date']),
+        Time.at(ts['end_date'] || ts['start_date']),
+        data['timezone']
+      )
+    }.reject(&:finished?).sort_by(&:start_date)
   end
 
   # From Cormac:
@@ -108,7 +57,7 @@ class MobilizeAmericaEvent
 
   def national_email?
     # Check if event has a national email address
-    contact_email.to_s =~ /@sunrisemovement\.org$/
+    !!(contact_email.to_s =~ /@sunrisemovement\.org$/)
   end
 
   def national_tag?
@@ -124,7 +73,7 @@ class MobilizeAmericaEvent
   # The main method of this class -- converts the MobilizeAmerica JSON to
   # Sunrise Event Map JSON
   def map_entry
-    {
+    entry = {
       city: location['locality'],
       state: location['region'],
       address: (location['address_lines'] || []).select{|l| l.size > 0}.join("\n"),
@@ -137,12 +86,16 @@ class MobilizeAmericaEvent
       location_name: location['venue'],
       featured_image_url: data['featured_image_url'],
       registration_link: data['browser_url'],
-      start_date: start_date,
-      end_date: end_date,
+      timeslots: timeslots.map(&:as_json),
       latitude: latitude,
       longitude: longitude,
       hub_id: hub_id # this method comes from event.rb
     }
+    entry[:end_date] = entry[:timeslots].last[:end_date]
+    entry[:start_date] = entry[:timeslots].first[:start_date]
+    entry[:end_date_string] = entry[:timeslots].last[:end_date_string]
+    entry[:start_date_string] = entry[:timeslots].first[:start_date_string]
+    entry
   end
 
   def location
