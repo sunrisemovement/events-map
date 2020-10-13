@@ -703,6 +703,20 @@ function linkEscape(s) {
     return escaped;
 }
 
+function utmTag(link, content) {
+  var url = new URL(link);
+  const utmParams = `utm_source=event-map&utm_content=${content}`;
+
+  console.log(url.search)
+  if (url.search) {
+    url.search += `&${utmParams}`;
+  } else {
+    url.search = utmParams;
+  }
+
+  return url.toString();
+}
+
 function eventAddress(ev) {
   const parts = [];
 
@@ -749,7 +763,7 @@ function eventDesc(ev) {
 
 function eventCard(ev) {
   return `<div class='event-card-header'>
-    <a target='_blank' href='${linkEscape(ev.registration_link)}?utm_source=event-map&utm_content=list' class='event-card-header-rsvp event-button-secondary'>RSVP</a>
+    <a target='_blank' href='${linkEscape(utmTag(ev.registration_link, "list"))}' class='event-card-header-rsvp event-button-secondary'>RSVP</a>
     <div class='event-card-header-title'>
       ${htmlEscape(ev.event_title)}
     </div>
@@ -773,7 +787,7 @@ function eventTooltip(ev) {
         ${dateRangeStr(ev.start_date, ev.end_date)} at ${timeStr(ev.start_date)}
       </div>
       <div class='event-tooltip-body-rsvp'>
-        <a class='event-button-secondary' target='_blank' href='${linkEscape(ev.registration_link)}?utm_source=event-map&utm_content=map'>RSVP</a>
+        <a class='event-button-secondary' target='_blank' href='${linkEscape(utmTag(ev.registration_link, "map"))}'>RSVP</a>
       </div>
     </div>
   </div>`;
