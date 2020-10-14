@@ -707,7 +707,6 @@ function utmTag(link, content) {
   var url = new URL(link);
   const utmParams = `utm_source=event-map&utm_content=${content}`;
 
-  console.log(url.search)
   if (url.search) {
     url.search += `&${utmParams}`;
   } else {
