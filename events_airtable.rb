@@ -27,20 +27,15 @@ class EventTypeDictionary < Airrecord::Table
   self.table_name = 'Event Type Dictionary'
 
   def self.mapping
-    # Construct a hash of (source event type => user-friendly name) using
-    # the data provided in the Event Map and Management Airtable
+    # Construct a hash of (source event type => dictionary entry with
+    # user-friendly name & other metadata) using the data provided in the Event
+    # Map and Management Airtable
     dict = Hash.new { |h,k| h[k] = {} }
 
     all.each do |d|
       source = d["Source"].to_s.strip.downcase
       old_et = d["source_event_type"].to_s.strip.downcase
-      new_et = d["map_event_type"]
-
-      if d["exclude_from_map"].to_s == "1"
-        dict[source][old_et] = false
-      else
-        dict[source][old_et] = new_et
-      end
+      dict[source][old_et] = d
     end
 
     dict
@@ -52,28 +47,22 @@ class EventTypeDictionary < Airrecord::Table
     dict = self.mapping
     entries.each_with_object([]) do |entry, list|
       source = entry[:event_source].to_s.strip.downcase
-
-      if source == 'airtable'
-        # Airtable events that have made it this far are always included
-        # and have the right event type
-        list << entry
-        next
-      end
-
       old_et = entry[:event_type].to_s.strip.downcase
       new_et = dict[source][old_et]
 
-      if new_et === false
+      if new_et['exclude_from_map']
         # This event type has specifically been excluded from the map
         puts "Skipping specifically-excluded #{source} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
         next
       elsif new_et.blank?
         # This event type is unrecognized; warn but keep it
         puts "Unmapped #{source} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
+        entry[:exclude_from_carousel] = false
         list << entry
       else
         # This event type has been successfully mapped! :D
-        entry[:event_type] = new_et
+        entry[:event_type] = new_et['map_event_type']
+        entry[:exclude_from_carousel] = !!new_et['exclude_from_carousel']
         list << entry
       end
     end
