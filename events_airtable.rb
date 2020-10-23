@@ -50,14 +50,14 @@ class EventTypeDictionary < Airrecord::Table
       old_et = entry[:event_type].to_s.strip.downcase
       new_et = dict[source][old_et]
 
-      if new_et['exclude_from_map']
-        # This event type has specifically been excluded from the map
-        puts "Skipping specifically-excluded #{source} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
-        next
-      elsif new_et.blank?
+      if new_et.blank?
         # This event type is unrecognized; warn but keep it
         puts "Unmapped #{source} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
         list << entry
+      elsif new_et['exclude_from_map']
+        # This event type has specifically been excluded from the map
+        puts "Skipping specifically-excluded #{source} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
+        next
       else
         # This event type has been successfully mapped! :D
         entry[:event_type] = new_et['map_event_type']
