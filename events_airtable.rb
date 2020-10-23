@@ -57,12 +57,16 @@ class EventTypeDictionary < Airrecord::Table
       elsif new_et.blank?
         # This event type is unrecognized; warn but keep it
         puts "Unmapped #{source} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
-        entry[:exclude_from_carousel] = false
         list << entry
       else
         # This event type has been successfully mapped! :D
         entry[:event_type] = new_et['map_event_type']
-        entry[:exclude_from_carousel] = !!new_et['exclude_from_carousel']
+
+        # Record if this event type is specifically excluded from the carousel
+        if new_et['exclude_from_carousel']
+          entry[:include_on_carousel] = false
+        end
+
         list << entry
       end
     end
