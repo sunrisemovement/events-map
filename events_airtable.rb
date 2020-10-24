@@ -50,6 +50,10 @@ class EventTypeDictionary < Airrecord::Table
       old_et = entry[:event_type].to_s.strip.downcase
       new_et = dict[source][old_et]
 
+      # Save the original event type for debugging / figuring out what to
+      # exclude
+      entry[:orig_event_type] = entry[:event_type]
+
       if new_et.blank?
         # This event type is unrecognized; warn but keep it
         puts "Unmapped #{source} event type #{entry[:event_type].inspect} for #{entry[:event_title]}"
