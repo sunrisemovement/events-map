@@ -81,7 +81,7 @@ class MobilizeAmericaEvent
       event_source: 'mobilize',
       event_type: data['event_type'],
       event_title: data['title'],
-      is_national: is_national,
+      include_on_carousel: is_national, # show national MA events on carousel
       description: data['description'],
       location_name: location['venue'],
       featured_image_url: data['featured_image_url'],

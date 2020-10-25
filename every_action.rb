@@ -80,7 +80,7 @@ class EveryActionEvent
       location_name: location['name'],
       event_source: 'everyaction',
       event_type: event_type,
-      is_national: true,
+      include_on_carousel: true, # by default, EA events are on the carousel
       description: data['description'],
       event_title: data['name'],
       registration_link: registration_link,
