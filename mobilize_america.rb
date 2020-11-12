@@ -42,21 +42,19 @@ class MobilizeAmericaEvent
     }.reject(&:finished?).sort_by(&:start_date)
   end
 
-  # From Cormac:
-  #   Coordinated and IE MobilizeAmerica events will show up in the national
-  #   event carousel if they are hosted by an @sunrisemovement email address or
-  #   have the tag "national event" and are NOT marked as hosted by a volunteer
-  def is_national
-    national_committee? && (national_email? || (national_tag? && !volunteer_host?))
+  # Designate certain hosts to always have events appear / not appear on the
+  # carousel, falling back to an email/tag-based rule otherwise.
+  def show_on_carousel?
+    if EventHost.show_on_carousel?(contact_email)
+      true
+    elsif EventHost.hide_on_carousel?(contact_email)
+      false
+    else
+      sunrise_national_email? || (national_tag? && !volunteer_host?)
+    end
   end
 
-  def national_committee?
-    # Check if event is coordinated / IE
-    ['2949', '4094'].include? org_id.to_s
-  end
-
-  def national_email?
-    # Check if event has a national email address
+  def sunrise_national_email?
     !!(contact_email.to_s =~ /@sunrisemovement\.org$/)
   end
 
@@ -81,7 +79,7 @@ class MobilizeAmericaEvent
       event_source: 'mobilize',
       event_type: data['event_type'],
       event_title: data['title'],
-      include_on_carousel: is_national, # show national MA events on carousel
+      include_on_carousel: show_on_carousel?,
       description: data['description'],
       location_name: location['venue'],
       featured_image_url: data['featured_image_url'],
