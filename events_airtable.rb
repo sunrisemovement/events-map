@@ -22,6 +22,34 @@ def query_mapbox(loc)
   resp['features'].first
 end
 
+class EventHost < Airrecord::Table
+  self.base_key = ENV['AIRTABLE_APP_KEY']
+  self.table_name = 'Event Hosts'
+
+  def self.standardize(email)
+    # Standarize emails, ensuring case-insensitive comparisons with local part
+    # dots ignored.
+    local_part, domain = email.to_s.split('@')
+    return unless local_part && domain
+    "#{local_part.downcase.gsub('.', '')}@#{domain.downcase}"
+  end
+
+  def self.mapping
+    @mapping ||= all.each_with_object({}) do |host, h|
+      next unless email = standardize(host['Host Email'])
+      h[email] = host['Carousel Status']
+    end
+  end
+
+  def self.show_on_carousel?(email)
+    mapping[standardize(email)] == 'Show their events'
+  end
+
+  def self.hide_on_carousel?(email)
+    mapping[standardize(email)] == 'Hide their events'
+  end
+end
+
 class EventTypeDictionary < Airrecord::Table
   self.base_key = ENV['AIRTABLE_APP_KEY']
   self.table_name = 'Event Type Dictionary'
