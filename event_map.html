@@ -809,7 +809,7 @@ function sample(array) {
 $(document).ready(function() {
   $.ajax({
       type: "GET",
-      url: "https://sunrise-events.s3.amazonaws.com/events-staging.json",
+      url: "https://sunrise-events.s3.amazonaws.com/events.json",
       dataType: "json",
       success: function(data) {
         const search = new URLSearchParams(location.search);
