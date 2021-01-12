@@ -68,6 +68,10 @@ class MobilizeAmericaEvent
     data["created_by_volunteer_host"]
   end
 
+  def campaign_slug
+    (data["event_campaign"] || {})["slug"]
+  end
+
   # The main method of this class -- converts the MobilizeAmerica JSON to
   # Sunrise Event Map JSON
   def map_entry
@@ -79,6 +83,7 @@ class MobilizeAmericaEvent
       event_source: 'mobilize',
       event_type: data['event_type'],
       event_title: data['title'],
+      campaign: campaign_slug,
       include_on_carousel: show_on_carousel?,
       description: data['description'],
       location_name: location['venue'],
