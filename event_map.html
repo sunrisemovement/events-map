@@ -546,8 +546,7 @@ transform: scale(0.9);
       <div class='event-search-bar'>
         <span class='sunrise-icon'></span>
         <div class='sunrise-logo'>SUNRISE <span class='sunrise-logo-movement'>MOVEMENT</span> EVENTS</div>
-
-        <p>Use the searchbar below to find trainings, rallies, canvasses, and other events!</p>
+        <p class='search-text'>Use the searchbar below to find trainings, rallies, canvasses, and other events!</p>
         <div id='event-search-wrapper'>
           <input id='event-text-search' class='input' type='search' placeholder='Filter by zip, city, state, or name'>
         </div>
@@ -810,13 +809,25 @@ function sample(array) {
 $(document).ready(function() {
   $.ajax({
       type: "GET",
-      url: "https://sunrise-events.s3.amazonaws.com/events.json",
+      url: "https://sunrise-events.s3.amazonaws.com/events-staging.json",
       dataType: "json",
       success: function(data) {
         const search = new URLSearchParams(location.search);
+
         if (search.get('state')) {
           $('.sunrise-logo-movement').text(search.get('state'));
           initMap(data.map_data.filter(ev => ev.state == search.get('state')));
+        } else if (search.get('campaign')) {
+          if (search.get('header_text')) {
+            $('.sunrise-logo').text(search.get('header_text'));
+            $('.sunrise-icon').remove();
+          }
+
+          if (search.get('filter_text')) {
+            $('.search-text').text(search.get('filter_text'));
+          }
+
+          initMap(data.map_data.filter(ev => ev.campaign == search.get('campaign')));
         } else {
           initMap(data.map_data);
         }
