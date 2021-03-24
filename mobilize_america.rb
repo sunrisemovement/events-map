@@ -14,6 +14,8 @@ require_relative 'timeslot'
 class MobilizeAmericaEvent
   include Event # Include some platform-agonstic helper methods from event.rb
 
+  ZIP_COORDS = JSON.parse(File.read(File.join(__dir__, 'zip_codes.json')))
+
   attr_reader :data # The original data from the API
   attr_reader :org_id # The mobilize america organization id
 
@@ -27,8 +29,8 @@ class MobilizeAmericaEvent
   # Note that we just check the presence of `start_date` to determine if the
   # events are upcoming because it's coming from the `first_timeslot` object,
   # which is only present if there is at least one non-finished timeslot.
-  def should_appear?
-    data['visibility'] == 'PUBLIC' && data['address_visibility'] == 'PUBLIC' && timeslots.any?
+  def should_appear_on_map?
+    data['visibility'] == 'PUBLIC' && timeslots.any?
   end
 
   # All of the upcoming timeslots for the events, but as our wrapper objects
@@ -72,14 +74,54 @@ class MobilizeAmericaEvent
     (data["event_campaign"] || {})["slug"]
   end
 
+  def public_address?
+    data['address_visibility'] == 'PUBLIC'
+  end
+
+  def location
+    data['location'] || {}
+  end
+
+  def address
+    if public_address?
+      (location['address_lines'] || []).select{|l| l.size > 0}.join("\n")
+    end
+  end
+
+  def zip_code
+    location['postal_code']
+  end
+
+  def zip_coords
+    ZIP_COORDS[zip_code.to_s] if zip_code.present?
+  end
+
+  # The latitude of the event (nil-safe)
+  def latitude
+    if public_address?
+      (location['location'] || {})['latitude']
+    elsif zip_coords.present?
+      zip_coords[0]
+    end
+  end
+
+  # The longitude of the event (nil-safe)
+  def longitude
+    if public_address?
+      (location['location'] || {})['longitude']
+    elsif zip_coords.present?
+      zip_coords[1]
+    end
+  end
+
   # The main method of this class -- converts the MobilizeAmerica JSON to
   # Sunrise Event Map JSON
   def map_entry
     entry = {
       city: location['locality'],
       state: location['region'],
-      address: (location['address_lines'] || []).select{|l| l.size > 0}.join("\n"),
-      zip_code: location['postal_code'],
+      address: address,
+      zip_code: zip_code,
       event_source: 'mobilize',
       event_type: data['event_type'],
       event_title: data['title'],
@@ -99,20 +141,6 @@ class MobilizeAmericaEvent
     entry[:end_date_string] = entry[:timeslots].last[:end_date_string]
     entry[:start_date_string] = entry[:timeslots].first[:start_date_string]
     entry
-  end
-
-  def location
-    data['location'] || {}
-  end
-
-  # The latitude of the event (nil-safe)
-  def latitude
-    (location['location'] || {})['latitude']
-  end
-
-  # The longitude of the event (nil-safe)
-  def longitude
-    (location['location'] || {})['longitude']
   end
 
   def contact
@@ -165,7 +193,7 @@ class MobilizeAmericaRequest
 
   # Convert all of the events in the JSON response to our wrapper object
   def results
-    response['data'].map { |r| MobilizeAmericaEvent.new(r, @org_id) }
+    response['data']
   end
 end
 
@@ -178,7 +206,7 @@ class MobilizeAmericaClient
   end
 
   # Get events for this organization
-  def events(max_pages=100)
+  def events_request(max_pages=100)
     results = []
     max_pages.times do |page|
       # Repeatedly request events, page by page, until we reach the final page
@@ -187,11 +215,18 @@ class MobilizeAmericaClient
       results += req.results
       break if req.last_page?
     end
-    # Hide the events which are not public or have already happened
-    results.select(&:should_appear?)
+    results
   end
 
-  def event_map_entries
-    events.map(&:map_entry)
+  def events
+    @events ||= events_request.map { |e| MobilizeAmericaEvent.new(e, @org_id) }
+  end
+
+  def visible_events
+    events.select(&:should_appear_on_map?)
+  end
+
+  def map_entries
+    visible_events.map(&:map_entry)
   end
 end
