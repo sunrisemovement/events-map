@@ -88,6 +88,12 @@ class MobilizeAmericaEvent
     end
   end
 
+  def location_name
+    if public_address?
+      location['venue']
+    end
+  end
+
   def zip_code
     location['postal_code']
   end
@@ -128,7 +134,7 @@ class MobilizeAmericaEvent
       campaign: campaign_slug,
       include_on_carousel: show_on_carousel?,
       description: data['description'],
-      location_name: location['venue'],
+      location_name: location_name,
       featured_image_url: data['featured_image_url'],
       registration_link: data['browser_url'],
       timeslots: timeslots.map(&:as_json),
