@@ -35,9 +35,12 @@ class EveryActionClient
     @events ||= events_request.map { |e| EveryActionEvent.new(e) }
   end
 
+  def visible_events
+    events.select(&:should_appear_on_map?)
+  end
+
   def map_entries
-    # Filter events and get their map entries.
-    events.select(&:should_appear_on_map?).map(&:map_entry)
+    visible_events.map(&:map_entry)
   end
 end
 
