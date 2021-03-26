@@ -806,6 +806,14 @@ function sample(array) {
   return array[Math.floor(Math.random()*array.length)];
 }
 
+function eventMatches(eventSearch, ev) {
+  for (let es of eventSearch.split('|'))
+    for (let field of ['zip_code', 'event_title', 'city', 'state', 'location_name'])
+      if ((ev[field] || '').toLowerCase().includes(es.toLowerCase().trim()))
+        return true;
+  return false;
+}
+
 $(document).ready(function() {
   $.ajax({
       type: "GET",
@@ -814,23 +822,31 @@ $(document).ready(function() {
       success: function(data) {
         const search = new URLSearchParams(location.search);
 
+        let mapData = data.map_data;
+
         if (search.get('state')) {
-          $('.sunrise-logo-movement').text(search.get('state'));
-          initMap(data.map_data.filter(ev => ev.state == search.get('state')));
-        } else if (search.get('campaign')) {
-          if (search.get('header_text')) {
-            $('.sunrise-logo').text(search.get('header_text'));
-            $('.sunrise-icon').remove();
-          }
-
-          if (search.get('filter_text')) {
-            $('.search-text').text(search.get('filter_text'));
-          }
-
-          initMap(data.map_data.filter(ev => ev.campaign == search.get('campaign')));
-        } else {
-          initMap(data.map_data);
+          mapData = mapData.filter(ev => ev.state == search.get('state'));
         }
+        if (search.get('campaign') && search.get('also_include')) {
+          mapData = mapData.filter(ev => ev.campaign == search.get('campaign') || eventMatches(search.get('also_include'), ev));
+        } else if (search.get('campaign')) {
+          mapData = mapData.filter(ev => ev.campaign == search.get('campaign'));
+        } else if (search.get('also_include')) {
+          mapData = mapData.filter(ev => eventMatches(search.get('also_include'), ev));
+        }
+
+        if (search.get('header_text')) {
+          $('.sunrise-logo').text(search.get('header_text'));
+          $('.sunrise-icon').remove();
+        } else if (search.get('state')) {
+          $('.sunrise-logo-movement').text(search.get('state'));
+        }
+
+        if (search.get('filter_text')) {
+          $('.search-text').text(search.get('filter_text'));
+        }
+
+        initMap(mapData);
       }
    });
 });
@@ -991,9 +1007,7 @@ function initMap(events) {
         if (!eventSearch) return true;
 
         // If one of the specified fields is an exact text match, display it
-        for (let field of ['zip_code', 'event_title', 'city', 'state', 'location_name'])
-          if ((ev[field] || '').toLowerCase().includes(eventSearch.toLowerCase()))
-            return true;
+        if (eventMatches(eventSearch, ev)) return true;
 
         // If the search text includes a zip code and we're within 25km, display it
         for (let coord of zipCoords) {
