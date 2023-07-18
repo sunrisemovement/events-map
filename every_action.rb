@@ -52,11 +52,15 @@ class EveryActionEvent
     @data = data
   end
 
+  def has_hide_code?
+    data['codes'].any? { |c| c['name'] == 'hide from map' }
+  end
+
   def should_appear_on_map?
     # Events appear if they're associated with a published online form and if
     # they're listed as active (and also if they're not excluded by event type,
     # but that happens later)
-    registration_link.present? && data['isActive']
+    registration_link.present? && data['isActive'] && !has_hide_code?
   end
 
   def event_type
