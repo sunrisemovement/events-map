@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.6.6'
+ruby '2.7.5'
 
 gem 'activesupport'
 gem 'airrecord'
@@ -11,3 +11,5 @@ gem 'tzinfo'
 gem 'pry'
 gem 'rb-readline'
 gem 'sinatra' # for heroku deployment
+
+gem 'bigdecimal', '1.3.5'
