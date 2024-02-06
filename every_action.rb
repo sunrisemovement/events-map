@@ -91,7 +91,6 @@ class EveryActionEvent
       description: data['description'],
       event_title: data['name'],
       registration_link: registration_link,
-      featured_image_url: featured_image_url,
       timeslots: timeslots.map(&:as_json),
       latitude: latitude,
       longitude: longitude,
@@ -114,10 +113,6 @@ class EveryActionEvent
 
   def registration_link
     online_forms.first.try(:url)
-  end
-
-  def featured_image_url
-    online_forms.first.try(:featured_image_url)
   end
 
   def locations
@@ -149,10 +144,7 @@ class EveryActionOnlineForm
   end
 
   def json_entry
-    data.merge({
-      "bannerImagePath" => featured_image_url,
-      "description" => description
-    })
+    data
   end
 
   def published?
@@ -161,48 +153,5 @@ class EveryActionOnlineForm
 
   def url
     data["url"]
-  end
-
-  def form_def_url
-    # It's not documented in their official API, but @Jared discovered there is
-    # a JSON endpoint containing form definition information not included in
-    # the limited onlineActionForms response, which in particular includes a
-    # featured image URL. This URL can be constructed as follows:
-    url.sub("https://secure.everyaction.com",
-            "https://secure.everyaction.com/v2/Forms")
-  end
-
-  def form_def_response
-    HTTParty.get(form_def_url, headers: {
-      "Content-Type" => "application/json"
-    })
-  rescue
-    {} # Return empty hash in the event this stops working in the future
-  end
-
-  def form_def
-    @form_def ||= (form_def_response || {})
-  end
-
-  def featured_image_url
-    form_def["bannerImagePath"]
-  end
-
-  def form_elements
-    form_def["form_elements"] || []
-  end
-
-  def header_element
-    # The form definition object includes a header element that looks a lot
-    # like a description. This can be used in place of an explicitly given text
-    # description for the event.
-    form_elements.detect{|el| el["name"] == "HeaderHtml" && el["type"] == "markup" }
-  end
-
-  def description
-    # Return the description described above (as an HTML string)
-    if header_element
-      header_element["markup"]
-    end
   end
 end
