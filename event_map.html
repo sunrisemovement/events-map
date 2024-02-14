@@ -822,6 +822,10 @@ $(document).ready(function() {
         } else if (search.get('also_include')) {
           mapData = mapData.filter(ev => eventMatches(search.get('also_include'), ev));
         }
+        
+        if (search.get('date')) {
+          mapData = mapData.filter(ev => ev.start_date.startsWith(search.get('date')));
+        }
 
         if (search.get('header_text')) {
           $('.sunrise-logo').text(search.get('header_text'));
