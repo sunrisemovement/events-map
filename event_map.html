@@ -805,7 +805,7 @@ function eventMatches(eventSearch, ev) {
 $(document).ready(function() {
   $.ajax({
       type: "GET",
-      url: "https://sunrise-events.s3.amazonaws.com/events.json",
+      url: `https://sunrise-events.s3.amazonaws.com/events.json?t={new Date().getTime()}`,
       dataType: "json",
       success: function(data) {
         const search = new URLSearchParams(location.search);
@@ -825,6 +825,21 @@ $(document).ready(function() {
         
         if (search.get('date')) {
           mapData = mapData.filter(ev => ev.start_date.startsWith(search.get('date')));
+        }
+
+        if (search.get('date_overlap_range')) {
+          const [t1, t2] = search.get('date_overlap_range').split('_');
+          mapData = mapData.filter(ev => t2 >= ev.start_date && t1 <= ev.end_date);
+        }
+
+        if (search.get('start_date_range')) {
+          const [t1, t2] = search.get('start_date_range').split('_');
+          mapData = mapData.filter(ev => ev.start_date >= t1 && ev.start_date <= t2);
+        }
+
+        if (search.get('end_date_range')) {
+          const [t1, t2] = search.get('end_date_range').split('_');
+          mapData = mapData.filter(ev => ev.end_date >= t1 && ev.end_date <= t2);
         }
 
         if (search.get('header_text')) {
