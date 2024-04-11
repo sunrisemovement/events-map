@@ -19,11 +19,11 @@ require 'active_support/core_ext'
 # Load environment variables that tell us the API key and app id which will let
 # us access the Hub Tracking Airtable.
 Dotenv.load
-Airrecord.api_key = ENV['AIRTABLE_API_KEY']
 
 # Wrapper class around hub leaders
 class Leader < Airrecord::Table
   self.base_key = ENV['HUBHUB_APP_KEY']
+  self.api_key = ENV['HUBHUB_API_KEY']
   self.table_name = 'Hub Leaders'
 
   # Skip leaders that are marked as deleted
@@ -39,6 +39,7 @@ end
 # Wrapper class around hubs
 class Hub < Airrecord::Table
   self.base_key = ENV['HUBHUB_APP_KEY']
+  self.api_key = ENV['HUBHUB_API_KEY']
   self.table_name = 'Hubs'
 
   has_many :hub_leaders, class: 'Leader', column: 'Hub Leaders'

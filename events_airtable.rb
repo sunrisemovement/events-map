@@ -6,7 +6,6 @@ require 'json'
 require_relative 'event'
 
 Dotenv.load
-Airrecord.api_key = ENV['AIRTABLE_API_KEY']
 
 # Safely try to transform a data string into a standard format
 def date_parse(d)
@@ -24,6 +23,7 @@ end
 
 class EventHost < Airrecord::Table
   self.base_key = ENV['AIRTABLE_APP_KEY']
+  self.api_key = ENV['AIRTABLE_API_KEY']
   self.table_name = 'Event Hosts'
 
   def self.standardize(email)
@@ -52,6 +52,7 @@ end
 
 class EventTypeDictionary < Airrecord::Table
   self.base_key = ENV['AIRTABLE_APP_KEY']
+  self.api_key = ENV['AIRTABLE_API_KEY']
   self.table_name = 'Event Type Dictionary'
 
   def self.mapping
@@ -110,6 +111,7 @@ class AirtableEvent < Airrecord::Table
   include Event
 
   self.base_key = ENV['AIRTABLE_APP_KEY']
+  self.api_key = ENV['AIRTABLE_API_KEY']
   self.table_name = 'Events'
 
   def upcoming?
